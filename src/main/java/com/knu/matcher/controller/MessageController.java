@@ -1,36 +1,44 @@
 package com.knu.matcher.controller;
 
-import com.knu.matcher.dto.request.CreateMessageDto;
-import com.knu.matcher.dto.response.message.MessageDetailDto;
-import com.knu.matcher.dto.response.message.MessageListDto;
+import com.knu.matcher.dto.message.CreateMessageRequest;
+import com.knu.matcher.dto.message.MessageDetailDto;
+import com.knu.matcher.dto.message.MessageSummaryDto;
 import com.knu.matcher.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/message")
 public class MessageController {
-    private MessageService messageService;
+    private final MessageService messageService;
 
     @PostMapping
-    public long createMessage(@RequestBody CreateMessageDto dto) {
-        return messageService.createMessage(dto);
+    public Long createMessage(@RequestBody CreateMessageRequest dto) {
+        String userEmail = "user2@example.com";
+        return messageService.createMessage(userEmail, dto);
     }
 
-    @GetMapping("/{userEmail}")
-    public MessageDetailDto getMessage(@PathVariable String userEmail) {
-        return messageService.getMessage(userEmail);
-    }
 
     @GetMapping
-    public MessageListDto getMessages() {
-        return messageService.getMessages();
+    public List<MessageSummaryDto> getMessagesSummary() {
+        String userEmail = "user2@example.com";
+
+        return messageService.getMessagesSummary(userEmail);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteMessage(@PathVariable long id) {
-        messageService.deleteMessage(id);
+    @GetMapping("/{otherUserEmail}")
+    public List<MessageDetailDto> getMessagesDetail(@PathVariable String otherUserEmail) {
+        String userEmail = "user2@example.com";
+        return messageService.getMessagesDetail(userEmail, otherUserEmail);
+    }
+
+    @DeleteMapping("/{mid}")
+    public void deleteMessage(@PathVariable long mid) {
+        String userEmail = "user2@example.com";
+        messageService.deleteMessage(userEmail, mid);
     }
 
 }
