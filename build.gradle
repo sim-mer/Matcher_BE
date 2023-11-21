@@ -25,8 +25,10 @@ dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-validation'
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		compileOnly 'org.projectlombok:lombok'
-		runtimeOnly 'com.oracle.database.jdbc:ojdbc10'
 		annotationProcessor 'org.projectlombok:lombok'
+
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'com.oracle.database.jdbc:ojdbc10:19.8.0.0'
 }
 
 tasks.named('bootBuildImage') {
