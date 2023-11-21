@@ -28,14 +28,14 @@ public class TokenCheckFilter implements Filter {
                 res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 res.setContentType("application/json");
                 res.setCharacterEncoding("UTF-8");
-                res.getWriter().write("{\"status\":\"error\", \"message\":\"토큰이 존재하지 않습니다.\"}");
+                res.getWriter().write("{\"status\":\"JwtError\", \"message\":\"토큰이 존재하지 않습니다.\"}");
                 return;
             }
             if(jwtUtil.validateToken(token)){
                 res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 res.setContentType("application/json");
                 res.setCharacterEncoding("UTF-8");
-                res.getWriter().write("{\"status\":\"error\", \"message\":\"토큰이 유효하지 않습니다.\"}");
+                res.getWriter().write("{\"status\":\"JwtError\", \"message\":\"토큰이 유효하지 않습니다.\"}");
                 return;
             }
         }
