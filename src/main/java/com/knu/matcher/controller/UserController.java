@@ -7,20 +7,20 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserController {
-    private final UserService userService;
-
-    @GetMapping
-    public UserDto getUser() {
-        return userService.getUser();
-    }
-
-    @PutMapping
-    public void updateUser(@RequestBody EditUserDto dto) {
-        userService.updateUser(dto);
-    }
-
-    @DeleteMapping
-    public void deleteUser() {
-        userService.deleteUser();
-    }
+//    private final UserService userService;
+//
+//    @GetMapping
+//    public UserDto getUser() {
+//        return userService.getUser();
+//    }
+//
+//    @PutMapping
+//    public void updateUser(@RequestBody EditUserDto dto) {
+//        userService.updateUser(dto);
+//    }
+//
+//    @DeleteMapping
+//    public void deleteUser() {
+//        userService.deleteUser();
+//    }
 }
