@@ -1,9 +1,7 @@
 package com.knu.matcher.controller;
 
-import com.knu.matcher.dto.jobpost.CreateCommentRequest;
-import com.knu.matcher.dto.jobpost.CreateJobPostRequest;
-import com.knu.matcher.dto.jobpost.EditJobPostRequest;
-import com.knu.matcher.dto.jobpost.JobPostDetailResponse;
+import com.knu.matcher.dto.common.OffsetPagingResponse;
+import com.knu.matcher.dto.jobpost.*;
 import com.knu.matcher.service.JobPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,12 +12,17 @@ import org.springframework.web.bind.annotation.*;
 public class JobPostController {
     private final JobPostService jobPostService;
 
+    @GetMapping
+    public OffsetPagingResponse<JobPostSummaryDto> getJobPostSummaryList(@RequestParam("page") int page) {
+        return jobPostService.getJobPostSummaryList(page,20);
+    }
+
     @GetMapping("/{jid}")
     public JobPostDetailResponse getJobPostDetail(@PathVariable("jid") Long jid) {
         return jobPostService.getJobPostDetail(jid);
     }
 
-    @GetMapping
+    @PostMapping
     public Long createJobPost(@RequestBody CreateJobPostRequest dto) {
         String userEmail = "user2@example.com";
         return jobPostService.createJobPost(userEmail, dto);

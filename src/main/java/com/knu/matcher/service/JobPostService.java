@@ -3,7 +3,9 @@ package com.knu.matcher.service;
 import com.knu.matcher.domain.jobpost.Comment;
 import com.knu.matcher.domain.jobpost.CommentWithUser;
 import com.knu.matcher.domain.jobpost.JobPost;
+import com.knu.matcher.domain.jobpost.JobPostSummaryWithUser;
 import com.knu.matcher.domain.user.User;
+import com.knu.matcher.dto.common.OffsetPagingResponse;
 import com.knu.matcher.dto.jobpost.*;
 import com.knu.matcher.dto.user.UserInfoDto;
 import com.knu.matcher.repository.CommentRepository;
@@ -23,6 +25,16 @@ public class JobPostService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
 
+
+    public OffsetPagingResponse<JobPostSummaryDto> getJobPostSummaryList(int page, int size) {
+        List<JobPostSummaryWithUser> jobPostSummaryWithUserList = jobPostRepository.findJobPostSummaryList(page, size);
+
+        System.out.println(jobPostSummaryWithUserList.size());
+        List<JobPostSummaryDto> jobPostSummaryDtoList = jobPostSummaryWithUserList.stream()
+                .map(JobPostSummaryDto::fromDomain).collect(Collectors.toList());
+
+        return new OffsetPagingResponse<>(jobPostSummaryDtoList.size() == size, jobPostSummaryDtoList);
+    }
 
     public JobPostDetailResponse getJobPostDetail(Long jobPostId) {
         JobPost jobPost = jobPostRepository.findById(jobPostId);

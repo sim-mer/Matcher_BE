@@ -1,6 +1,7 @@
 package com.knu.matcher.repository;
 
 import com.knu.matcher.domain.jobpost.JobPost;
+import com.knu.matcher.domain.jobpost.JobPostSummaryWithUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -249,5 +250,51 @@ public class JobPostRepository {
             dataSourceUtils.close(conn, pstmt, null);
         }
         return null;
+    }
+
+    public List<JobPostSummaryWithUser> findJobPostSummaryList(int page, int pageSize) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM ("+
+                "SELECT JPid, JPTitle, JPdate, JPUEmail" +
+                " FROM (" +
+                "SELECT SEQ, JPid, JPTitle, JPdate, JPUEmail FROM (" +
+                    "SELECT ROWNUM AS SEQ, JPid, JPTitle, JPdate, JPUEmail FROM (" +
+                        "SELECT * FROM JOBPOST ORDER BY JPdate DESC" +
+                    ")" +
+                ") WHERE SEQ >= ?" +
+                ") WHERE ROWNUM <= ? ) JOIN USERS ON USERS.Email = JPUemail ORDER BY JPdate DESC";
+        List<JobPostSummaryWithUser> jobPostSummaryWithUsers = new ArrayList<>();
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, page*pageSize);
+            pstmt.setInt(2, pageSize);
+
+            rs = pstmt.executeQuery();
+            while(rs.next()) {
+                Long id = rs.getLong(1);
+                String title = rs.getString(2);
+                LocalDateTime date = rs.getTimestamp(3).toLocalDateTime();
+                String userEmail = rs.getString(4);
+                String userName = rs.getString(5);
+                String userMajor = rs.getString(6);
+                String userStdNumber = rs.getString(7);
+
+                JobPostSummaryWithUser jobPostSummaryWithUser = JobPostSummaryWithUser.builder()
+                        .id(id).title(title).date(date).email(userEmail).name(userName).major(userMajor).stdNumber(userStdNumber).build();
+                jobPostSummaryWithUsers.add(jobPostSummaryWithUser);
+
+            }
+            return jobPostSummaryWithUsers;
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return jobPostSummaryWithUsers;
     }
 }
