@@ -39,7 +39,7 @@ public class MessageService {
     public List<MessageSummaryDto> getMessagesSummary(String userEmail) {
         List<String> emails = messageRepository.findUsersEmailInChatByUserEmail(userEmail);
         return emails.stream().map(email ->{
-            User user = userRepository.findById(email);
+            User user = userRepository.findByEmail(email);
             String userName = user.getName();
             MessageSummaryDto messageSummaryDto = MessageSummaryDto.builder()
                     .userEmail(email)

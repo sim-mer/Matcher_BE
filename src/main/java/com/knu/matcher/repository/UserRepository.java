@@ -17,7 +17,7 @@ public class UserRepository {
     private final DataSource dataSource;
     private final CustomDataSourceUtils dataSourceUtils;
 
-    public User findById(String Email) {
+    public User findByEmail(String Email) {
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
