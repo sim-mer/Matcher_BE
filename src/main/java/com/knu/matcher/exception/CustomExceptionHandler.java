@@ -64,4 +64,9 @@ public class CustomExceptionHandler {
     public ResponseEntity<ErrorResponse> JwtExceptionHandler(JwtException e) {
         return new ResponseEntity<>(new ErrorResponse("JwtException", e.getMessage()), BAD_REQUEST);
     }
+
+    @ExceptionHandler(value = RuntimeException.class)
+    public ResponseEntity<ErrorResponse> RuntimeExceptionHandler(RuntimeException e) {
+        return new ResponseEntity<>(new ErrorResponse("RuntimeException", e.getMessage()), BAD_REQUEST);
+    }
 }
