@@ -7,6 +7,9 @@ import com.knu.matcher.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
@@ -16,7 +19,7 @@ public class MessageController {
     private final MessageService messageService;
 
     @PostMapping
-    public Long createMessage(@RequestBody CreateMessageRequest dto) {
+    public Long createMessage(@RequestBody @Valid CreateMessageRequest dto) {
         String userEmail = "user2@example.com";
         return messageService.createMessage(userEmail, dto);
     }
