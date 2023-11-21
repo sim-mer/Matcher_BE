@@ -30,7 +30,11 @@ public class MessageService {
                 .senderEmail(userEmail)
                 .receiverEmail(dto.getReceiverEmail())
                 .build();
-        return messageRepository.save(message);
+        Long mid = messageRepository.save(message);
+        if(mid == null){
+            throw new IllegalArgumentException("메시지 전송에 실패하였습니다.");
+        }
+        return mid;
     }
     public List<MessageSummaryDto> getMessagesSummary(String userEmail) {
         List<String> emails = messageRepository.findUsersEmailInChatByUserEmail(userEmail);
