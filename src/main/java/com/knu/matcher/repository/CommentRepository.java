@@ -1,6 +1,7 @@
 package com.knu.matcher.repository;
 
 import com.knu.matcher.domain.jobpost.Comment;
+import com.knu.matcher.domain.jobpost.JobPost;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -39,7 +40,7 @@ public class CommentRepository {
         }
         return null;
     }
-    public Long createComment(Comment comment){
+    public Long save(Comment comment){
         Connection conn = null;
         PreparedStatement pstmt = null;
 
@@ -124,5 +125,34 @@ public class CommentRepository {
             dataSourceUtils.close(conn, pstmt, null);
         }
     }
-    
+
+    public Comment findById(Long id) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT * FROM COMMENTS WHERE Cid = ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, id);
+
+            rs = pstmt.executeQuery();
+            if(rs.next()) {
+                Long commentId = rs.getLong(1);
+                String content = rs.getString(2);
+                LocalDateTime date = rs.getTimestamp(3).toLocalDateTime();
+                Long jobPostId = rs.getLong(4);
+                String userEmail = rs.getString(5);
+                Comment comment = Comment.builder().id(commentId).content(content).date(date).jobPostId(jobPostId).userEmail(userEmail).build();
+                return comment;
+            }
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return null;
+    }
 }
