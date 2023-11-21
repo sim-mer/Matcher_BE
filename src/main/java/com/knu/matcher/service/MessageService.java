@@ -32,7 +32,7 @@ public class MessageService {
                 .build();
         Long mid = messageRepository.save(message);
         if(mid == null){
-            throw new IllegalArgumentException("메시지 전송에 실패하였습니다.");
+            throw new IllegalStateException("메시지 전송에 실패하였습니다.");
         }
         return mid;
     }
@@ -58,6 +58,9 @@ public class MessageService {
 
     public void deleteMessage(String userEmail, long mid) {
         Message message = messageRepository.findById(mid);
+        if(message == null){
+            throw new IllegalArgumentException("메시지가 존재하지 않습니다.");
+        }
         if(!message.getSenderEmail().equals(userEmail)){
             throw new IllegalArgumentException("해당 메시지를 삭제할 권한이 없습니다.");
         }
