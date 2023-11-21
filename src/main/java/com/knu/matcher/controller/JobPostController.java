@@ -3,6 +3,7 @@ package com.knu.matcher.controller;
 import com.knu.matcher.dto.jobpost.CreateCommentRequest;
 import com.knu.matcher.dto.jobpost.CreateJobPostRequest;
 import com.knu.matcher.dto.jobpost.EditJobPostRequest;
+import com.knu.matcher.dto.jobpost.JobPostDetailResponse;
 import com.knu.matcher.service.JobPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/jobpost")
 public class JobPostController {
     private final JobPostService jobPostService;
+
+    @GetMapping("/{jid}")
+    public JobPostDetailResponse getJobPostDetail(@PathVariable("jid") Long jid) {
+        return jobPostService.getJobPostDetail(jid);
+    }
 
     @GetMapping
     public Long createJobPost(@RequestBody CreateJobPostRequest dto) {

@@ -1,6 +1,7 @@
 package com.knu.matcher.dto.jobpost;
 
 import com.knu.matcher.domain.jobpost.Comment;
+import com.knu.matcher.domain.jobpost.CommentWithUser;
 import com.knu.matcher.domain.user.User;
 import com.knu.matcher.dto.user.UserInfoDto;
 import lombok.AllArgsConstructor;
@@ -18,12 +19,18 @@ public class CommentDto {
     private LocalDateTime date;
     private UserInfoDto author;
 
-    public static CommentDto fromDomain(Comment comment, User user){
+    public static CommentDto fromDomain(CommentWithUser commentWithUser){
+        UserInfoDto author = UserInfoDto.builder()
+                .name(commentWithUser.getName())
+                .email(commentWithUser.getUserEmail())
+                .major(commentWithUser.getMajor())
+                .stdNumber(commentWithUser.getStdNumber())
+                .build();
         return CommentDto.builder()
-                .id(comment.getId())
-                .content(comment.getContent())
-                .date(comment.getDate())
-                .author(UserInfoDto.fromDomain(user))
+                .id(commentWithUser.getId())
+                .content(commentWithUser.getContent())
+                .date(commentWithUser.getDate())
+                .author(author)
                 .build();
     }
 }

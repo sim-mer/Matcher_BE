@@ -1,7 +1,7 @@
 package com.knu.matcher.repository;
 
 import com.knu.matcher.domain.jobpost.Comment;
-import com.knu.matcher.domain.jobpost.JobPost;
+import com.knu.matcher.domain.jobpost.CommentWithUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -147,6 +147,44 @@ public class CommentRepository {
                 String userEmail = rs.getString(5);
                 Comment comment = Comment.builder().id(commentId).content(content).date(date).jobPostId(jobPostId).userEmail(userEmail).build();
                 return comment;
+            }
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return null;
+    }
+
+    public List<CommentWithUser> findCommentByJobPostIdWithUser(Long jobPostId){
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT Cid,Ccontent,Cdate, Email, Name, Major, Std_number " +
+                "FROM COMMENTS JOIN USERS ON COMMENTS.CUemail = USERS.Email WHERE CJPid = ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, jobPostId);
+
+            rs = pstmt.executeQuery();
+            if(rs.next()) {
+                Long commentId = rs.getLong(1);
+                String content = rs.getString(2);
+                LocalDateTime date = rs.getTimestamp(3).toLocalDateTime();
+                String userEmail = rs.getString(4);
+                String userName = rs.getString(5);
+                String userMajor = rs.getString(6);
+                String userStdNumber = rs.getString(7);
+                CommentWithUser comment = CommentWithUser.builder()
+                        .id(commentId).content(content).date(date).jobPostId(jobPostId)
+                        .userEmail(userEmail).name(userName).major(userMajor).stdNumber(userStdNumber).build();
+                return List.of(comment);
+
+
+
             }
         }catch(SQLException ex2) {
             ex2.printStackTrace();

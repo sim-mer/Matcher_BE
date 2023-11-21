@@ -1,10 +1,11 @@
 package com.knu.matcher.service;
 
 import com.knu.matcher.domain.jobpost.Comment;
+import com.knu.matcher.domain.jobpost.CommentWithUser;
 import com.knu.matcher.domain.jobpost.JobPost;
-import com.knu.matcher.dto.jobpost.CreateCommentRequest;
-import com.knu.matcher.dto.jobpost.CreateJobPostRequest;
-import com.knu.matcher.dto.jobpost.EditJobPostRequest;
+import com.knu.matcher.domain.user.User;
+import com.knu.matcher.dto.jobpost.*;
+import com.knu.matcher.dto.user.UserInfoDto;
 import com.knu.matcher.repository.CommentRepository;
 import com.knu.matcher.repository.JobPostRepository;
 import com.knu.matcher.repository.UserRepository;
@@ -12,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,28 @@ public class JobPostService {
     private final JobPostRepository jobPostRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+
+
+    public JobPostDetailResponse getJobPostDetail(Long jobPostId) {
+        JobPost jobPost = jobPostRepository.findById(jobPostId);
+        if(jobPost == null){
+            throw new IllegalArgumentException("게시글이 존재하지 않습니다.");
+        }
+        User author = userRepository.findById(jobPost.getUserEmail());
+
+        List<CommentWithUser> commentWithUserList = commentRepository.findCommentByJobPostIdWithUser(jobPostId);
+        List<CommentDto> commentDtoList = commentWithUserList.stream().map(CommentDto::fromDomain).collect(Collectors.toList());
+
+
+        return JobPostDetailResponse.builder()
+                .id(jobPost.getId())
+                .title(jobPost.getTitle())
+                .date(jobPost.getDate())
+                .author(UserInfoDto.fromDomain(author))
+                .content(jobPost.getContent())
+                .commentList(commentDtoList)
+                .build();
+    }
 
     public Long createJobPost(String userEmail, CreateJobPostRequest dto) {
         Long id = jobPostRepository.findLastJobPostId() + 1;
