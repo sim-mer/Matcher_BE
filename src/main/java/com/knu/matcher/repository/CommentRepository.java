@@ -159,6 +159,7 @@ public class CommentRepository {
     public List<CommentWithUser> findCommentByJobPostIdWithUser(Long jobPostId){
         Connection conn = null;
         PreparedStatement pstmt = null;
+        List<CommentWithUser> comments = new ArrayList<>();
 
         String sql = "SELECT Cid,Ccontent,Cdate, Email, Name, Major, Std_number " +
                 "FROM COMMENTS JOIN USERS ON COMMENTS.CUemail = USERS.Email WHERE CJPid = ?";
@@ -181,16 +182,15 @@ public class CommentRepository {
                 CommentWithUser comment = CommentWithUser.builder()
                         .id(commentId).content(content).date(date).jobPostId(jobPostId)
                         .userEmail(userEmail).name(userName).major(userMajor).stdNumber(userStdNumber).build();
-                return List.of(comment);
-
-
+                comments.add(comment);
 
             }
+            return comments;
         }catch(SQLException ex2) {
             ex2.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, rs);
         }
-        return null;
+        return comments;
     }
 }
