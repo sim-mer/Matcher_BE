@@ -135,7 +135,7 @@ public class JobPostRepository {
         }
         return jobPosts;
     }
-    public JobPost findPostById(Long Id){
+    public JobPost findById(Long Id){
         Connection conn = null;
         PreparedStatement pstmt = null;
 
@@ -165,7 +165,7 @@ public class JobPostRepository {
         return null;
     }
 
-    public boolean updateJobPost(JobPost jobPost) {
+    public void updateJobPost(JobPost jobPost) {
         Connection conn = null;
         PreparedStatement pstmt = null;
 
@@ -183,16 +183,14 @@ public class JobPostRepository {
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
                 conn.commit();
-                return true;
+                return;
             }
             conn.rollback();
-            return false;
         }catch(SQLException ex2) {
             ex2.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, null);
         }
-        return false;
     }
 
     public boolean deletePost(Long id) {
