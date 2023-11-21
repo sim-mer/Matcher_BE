@@ -1,6 +1,6 @@
 package com.knu.matcher.exception;
 
-import lombok.RequiredArgsConstructor;
+import io.jsonwebtoken.JwtException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -56,7 +56,12 @@ public class CustomExceptionHandler {
 
 
     @ExceptionHandler(value = NoSuchElementException.class)
-    public ResponseEntity<ErrorResponse> NoSuchElementExceptionHandler(NoSuchElementException e){
+    public ResponseEntity<ErrorResponse> NoSuchElementExceptionHandler(NoSuchElementException e) {
         return new ResponseEntity<>(new ErrorResponse("NoSuchElementException", e.getMessage()), BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = JwtException.class)
+    public ResponseEntity<ErrorResponse> JwtExceptionHandler(JwtException e) {
+        return new ResponseEntity<>(new ErrorResponse("JwtException", e.getMessage()), BAD_REQUEST);
     }
 }
