@@ -46,8 +46,8 @@ public class ImageService {
         return imgIds;
     }
 
-    public void deleteImage(long jobPostId) {
-        String name = jobPostImgRepository.findUUIDname(jobPostId);
+    public void deleteImage(long imageId) {
+        String name = jobPostImgRepository.findUUIDname(imageId);
         if(name == null) {
             throw new IllegalArgumentException("이미지가 존재하지 않습니다.");
         }
@@ -57,7 +57,7 @@ public class ImageService {
         } catch (IOException e) {
             throw new IllegalArgumentException("이미지 파일 삭제에 실패했습니다.");
         }
-        if(!jobPostImgRepository.delete(jobPostId)) {
+        if(!jobPostImgRepository.delete(imageId)) {
             throw new IllegalArgumentException("이미지 삭제에 실패했습니다.");
         }
     }

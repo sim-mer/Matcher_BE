@@ -30,7 +30,7 @@ public class ImageController {
 
     private final ImageService imageService;
 
-    @GetMapping("/{imageId}") //uuid_파일명
+    @GetMapping("/{imageId}")
     public ResponseEntity<Resource> showImage(@PathVariable long imageId) throws Exception{
         String imageName = imageService.getImageName(imageId);
         Path imagePath = Paths.get(imageFolder, imageName);
@@ -46,8 +46,8 @@ public class ImageController {
         return imageService.uploadImages(files, jobPostId);
     }
 
-    @DeleteMapping("/{jobPostId}")
-    public void deleteImage(@PathVariable long jobPostId) {
-        imageService.deleteImage(jobPostId);
+    @DeleteMapping("/{imageId}")
+    public void deleteImage(@PathVariable long imageId) {
+        imageService.deleteImage(imageId);
     }
 }
