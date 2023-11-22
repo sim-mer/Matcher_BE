@@ -50,5 +50,63 @@ public class UserRepository {
         return null;
     }
 
+    public boolean updateUser(User user) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "UPDATE USERS SET Name = ?, Major = ?, std_number = ? WHERE Email = ?";
+//        String sql = "UPDATE USERS SET Password = ?, Name = ?, Major = ?, std_number = ? WHERE Email = ?";
+
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getName());
+            pstmt.setString(2, user.getMajor());
+            pstmt.setString(3, user.getStdNumber());
+            pstmt.setString(4, user.getEmail());
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return true;
+            }
+            conn.rollback();
+            return false;
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, null);
+        }
+        return false;
+    }
+
+    public boolean deleteUser(String Email) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "DELETE FROM USERS WHERE Email = ?";
+
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, Email);
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return true;
+            }
+            conn.rollback();
+            return false;
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, null);
+        }
+        return false;
+    }
+
 
 }
