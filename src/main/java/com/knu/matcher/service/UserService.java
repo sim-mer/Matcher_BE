@@ -24,9 +24,6 @@ public class UserService {
         if(user == null){
             throw new IllegalArgumentException("존재하지 않는 유저입니다.");
         }
-        if(!user.getEmail().equals(userEmail)){
-            throw new IllegalArgumentException("권한이 없습니다.");
-        }
         return UserInfoDto.fromDomain(user);
     }
 
@@ -34,9 +31,6 @@ public class UserService {
         User user = userRepository.findByEmail(userEmail);
         if(user == null){
             throw new IllegalArgumentException("존재하지 않는 유저입니다.");
-        }
-        if(!user.getEmail().equals(userEmail)){
-            throw new IllegalArgumentException("권한이 없습니다.");
         }
         User editUser = User.builder().email(userEmail).name(dto.getName()).major(dto.getMajor()).stdNumber(dto.getStdNumber()).build();
         userRepository.updateUser(editUser);
@@ -46,9 +40,6 @@ public class UserService {
         User user = userRepository.findByEmail(userEmail);
         if(user == null){
             throw new IllegalArgumentException("존재하지 않는 유저입니다.");
-        }
-        if(!user.getEmail().equals(userEmail)){
-            throw new IllegalArgumentException("권한이 없습니다.");
         }
         userRepository.deleteUser(userEmail);
     }
