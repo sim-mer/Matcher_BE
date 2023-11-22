@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.ServletException;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,5 +69,10 @@ public class CustomExceptionHandler {
     @ExceptionHandler(value = RuntimeException.class)
     public ResponseEntity<ErrorResponse> RuntimeExceptionHandler(RuntimeException e) {
         return new ResponseEntity<>(new ErrorResponse("RuntimeException", e.getMessage()), BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = FileAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> FileAlreadyExistsExceptionHandler(FileAlreadyExistsException e) {
+        return new ResponseEntity<>(new ErrorResponse("FileAlreadyExistsException", e.getMessage()), BAD_REQUEST);
     }
 }
