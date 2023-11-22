@@ -1,9 +1,16 @@
 spring:
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
-    url: jdbc:oracle:thin:@localhost:1521:orcl
-    username: university
-    password: comp322
+    url: jdbc:oracle:thin:@dbclass.cte3nd3qikhy.ap-northeast-2.rds.amazonaws.com:1521:orcl
+    username: Midterm
+    password: midterm
+
+  servlet:
+    multipart:
+      max-request-size: 50MB
+      max-file-size: 50MB
 
 jwt:
   secret: asdfasdf
+
+ImageFolder: ImageFolder
