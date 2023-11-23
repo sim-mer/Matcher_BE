@@ -116,6 +116,12 @@ public class ReservationPostService {
 
     public OffsetPagingResponse<ReservationPostPagingDto> getReservationPosts(int page, int pageSize, String title) {
         List<ReservationPostPagingDto> reservationPostPagingDtoList = reservationPostRepository.findByTitleWithPage(page, pageSize, title);
+        if(reservationPostPagingDtoList == null) {
+            throw new IllegalStateException("예약 게시글 조회에 실패하였습니다.");
+        }
+        if(reservationPostPagingDtoList.isEmpty()) {
+            return new OffsetPagingResponse<>(false, reservationPostPagingDtoList);
+        }
         Long total = contByTitle(title);
         boolean hasNext = !(total <= page * pageSize);
         return new OffsetPagingResponse<>(hasNext, reservationPostPagingDtoList);
