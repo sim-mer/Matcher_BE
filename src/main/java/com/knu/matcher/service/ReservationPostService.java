@@ -3,10 +3,12 @@ package com.knu.matcher.service;
 import com.knu.matcher.domain.reservation.ReservationPost;
 import com.knu.matcher.domain.reservation.Seat;
 import com.knu.matcher.domain.user.User;
+import com.knu.matcher.dto.common.OffsetPagingResponse;
 import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.request.EditReservationPostDto;
 import com.knu.matcher.dto.response.reservation.AuthorDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
+import com.knu.matcher.dto.response.reservation.ReservationPostPagingDto;
 import com.knu.matcher.repository.ReservationPostRepository;
 import com.knu.matcher.repository.SeatRepository;
 import com.knu.matcher.repository.UserRepository;
@@ -110,5 +112,16 @@ public class ReservationPostService {
         return disableSeatList.stream()
                 .anyMatch(disableSeat -> disableSeat.getRowNumber() == row
                         && disableSeat.getColNumber() == col);
+    }
+
+    public OffsetPagingResponse<ReservationPostPagingDto> getReservationPosts(int page, int pageSize, String title) {
+        List<ReservationPostPagingDto> reservationPostPagingDtoList = reservationPostRepository.findByTitleWithPage(page, pageSize, title);
+        Long total = contByTitle(title);
+        boolean hasNext = !(total <= page * pageSize);
+        return new OffsetPagingResponse<>(hasNext, reservationPostPagingDtoList);
+    }
+
+    private Long contByTitle(String title) {
+        return reservationPostRepository.contByTitle(title);
     }
 }
