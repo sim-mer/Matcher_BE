@@ -16,7 +16,7 @@ public class CreateReservationPostDto {
 
     @Data
     @NoArgsConstructor
-    public class Seat {
+    public static class Seat {
         int rowNumber;
         int colNumber;
     }
