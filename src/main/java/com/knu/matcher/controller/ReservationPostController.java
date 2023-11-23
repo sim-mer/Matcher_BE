@@ -29,12 +29,12 @@ public class ReservationPostController {
     public void deleteReservationPost(@PathVariable long id) {
         reservationPostService.deleteReservationPost(id);
     }
-//
-//    @GetMapping("/{id}")
-//    public ReservationPostDetailDto getReservationPost(@PathVariable long id) {
-//        return reservationPostService.getReservationPostDetail(id);
-//    }
-//
+
+    @GetMapping("/{id}")
+    public ReservationPostDetailDto getReservationPost(@PathVariable long id) {
+        return reservationPostService.getReservationPostDetail(id);
+    }
+
 //    @GetMapping
 //    public ReservationPostPagingDto getReservationPosts(@RequestParam int page, @RequestParam(required = false) String title) {
 //        return reservationPostService.getReservationPosts(page, title);
