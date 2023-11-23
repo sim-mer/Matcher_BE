@@ -1,13 +1,13 @@
 package com.knu.matcher.dto.response.reservation;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
+@Builder
 public class ReservationPostDetailDto {
     long id;
     String title;
@@ -18,8 +18,8 @@ public class ReservationPostDetailDto {
     List<Seat> seatList;
 
     @Data
-    @NoArgsConstructor
-    public class Seat {
+    @Builder
+    public static class Seat {
         int rowNumber;
         int colNumber;
         String booker;
