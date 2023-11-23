@@ -1,6 +1,7 @@
 package com.knu.matcher.controller;
 
 import com.knu.matcher.annotation.TokenUserEmail;
+import com.knu.matcher.dto.common.OffsetPagingResponse;
 import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.request.EditReservationPostDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
@@ -35,9 +36,9 @@ public class ReservationPostController {
         return reservationPostService.getReservationPostDetail(id);
     }
 
-//    @GetMapping
-//    public ReservationPostPagingDto getReservationPosts(@RequestParam int page, @RequestParam(required = false) String title) {
-//        return reservationPostService.getReservationPosts(page, title);
-//    }
+    @GetMapping
+    public OffsetPagingResponse<ReservationPostPagingDto> getReservationPosts(@RequestParam int page, @RequestParam(required = false) String title) {
+        return reservationPostService.getReservationPosts(page, 20, title);
+    }
 
 }
