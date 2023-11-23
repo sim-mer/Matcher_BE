@@ -1,10 +1,10 @@
 package com.knu.matcher.dto.response.reservation;
 
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
+@Builder
 public class AuthorDto {
     String email;
     String name;
