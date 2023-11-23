@@ -1,6 +1,7 @@
 package com.knu.matcher.repository;
 
 import com.knu.matcher.domain.reservation.ReservationPost;
+import com.knu.matcher.dto.response.reservation.ReservationPostPagingDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -9,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -182,5 +185,77 @@ public class ReservationPostRepository {
             }
         }
         return sb.toString();
+    }
+
+    public List<ReservationPostPagingDto> findByTitleWithPage(int page, int pageSize, String title) {
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT * " +
+                "FROM (" +
+                "    SELECT ROWNUM AS RNUM, RP.* " +
+                "    FROM (" +
+                "        SELECT RP.RPid, RP.RPtitle, RP.RPdate, U.Name" +
+                "        FROM RESERVATIONPOST RP" +
+                "        JOIN USERS U ON RP.RPUemail = U.Email" +
+                "        WHERE RPtitle LIKE ? " +
+                "        ORDER BY RPdate DESC" +
+                "    ) RP" +
+                ") " +
+                "WHERE RNUM BETWEEN ? AND ?";
+        ResultSet rs = null;
+
+        List<ReservationPostPagingDto> dtoList = new ArrayList<>();
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + title + "%");
+            pstmt.setInt(2, (page - 1) * pageSize + 1);
+            pstmt.setInt(3, page * pageSize);
+
+            rs = pstmt.executeQuery();
+
+            while(rs.next()) {
+                ReservationPostPagingDto dto = ReservationPostPagingDto.builder()
+                        .id(rs.getLong(2))
+                        .title(rs.getString(3))
+                        .date(rs.getTimestamp(4).toLocalDateTime())
+                        .ownerName(rs.getString(5))
+                        .build();
+                dtoList.add(dto);
+            }
+            return dtoList;
+        }catch(Exception ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return null;
+    }
+
+    public Long contByTitle(String title) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT COUNT(*) FROM RESERVATIONPOST WHERE RPtitle LIKE ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + title + "%");
+
+            rs = pstmt.executeQuery();
+            if(rs.next()) {
+                return rs.getLong(1);
+            }
+        }catch(Exception ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return null;
     }
 }
