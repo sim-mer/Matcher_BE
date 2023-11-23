@@ -2,11 +2,14 @@ package com.knu.matcher.service;
 
 import com.knu.matcher.domain.reservation.ReservationPost;
 import com.knu.matcher.domain.reservation.Seat;
+import com.knu.matcher.domain.user.User;
 import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.request.EditReservationPostDto;
+import com.knu.matcher.dto.response.reservation.AuthorDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
 import com.knu.matcher.repository.ReservationPostRepository;
 import com.knu.matcher.repository.SeatRepository;
+import com.knu.matcher.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,7 @@ import java.util.List;
 public class ReservationPostService {
     private final ReservationPostRepository reservationPostRepository;
     private final SeatRepository seatRepository;
+    private final UserRepository userRepository;
 
     public long createReservationPost(CreateReservationPostDto dto, String email) {
         long reservationPostId = reservationPostRepository.findLastId() + 1;
@@ -45,8 +49,9 @@ public class ReservationPostService {
                             .id(seatId++)
                             .rowNumber(row)
                             .colNumber(col)
+                            .reservationPostId(reservationPostId)
                             .build();
-                    if (seatRepository.save(reservationPostId, seat) == null) {
+                    if (seatRepository.save(seat) == null) {
                         throw new IllegalStateException("예약 게시글 생성에 실패하였습니다.");
                     }
                 }
@@ -72,6 +77,33 @@ public class ReservationPostService {
         if(!reservationPostRepository.update(reservationPost)) {
             throw new IllegalStateException("예약 게시글 수정에 실패하였습니다.");
         }
+    }
+
+    public ReservationPostDetailDto getReservationPostDetail(long id) {
+        ReservationPost reservationPost = reservationPostRepository.findById(id);
+        if(reservationPost == null) {
+            throw new IllegalStateException("예약 게시글이 존재하지 않습니다.");
+        }
+        User user = userRepository.findByEmail(reservationPost.getOwnerEmail());
+
+        AuthorDto author = AuthorDto.builder()
+                .email(user.getEmail())
+                .name(user.getName())
+                .major(user.getMajor())
+                .stdNumber(user.getStdNumber())
+                .build();
+
+        List<ReservationPostDetailDto.Seat> seatList = seatRepository.findByRPidWithRU(id);
+
+        return ReservationPostDetailDto.builder()
+                .id(reservationPost.getId())
+                .title(reservationPost.getTitle())
+                .date(reservationPost.getDate())
+                .author(author)
+                .rowSize(reservationPost.getRowSize())
+                .colSize(reservationPost.getColSize())
+                .seatList(seatList)
+                .build();
     }
 
     private boolean isSeatDisabled(int row, int col, List<CreateReservationPostDto.Seat> disableSeatList) {
