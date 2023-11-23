@@ -12,7 +12,7 @@ public class CreateReservationPostDto {
     String content;
     int rowSize;
     int colSize;
-    List<Seat> seats;
+    List<Seat> disableSeatList;
 
     @Data
     @NoArgsConstructor
