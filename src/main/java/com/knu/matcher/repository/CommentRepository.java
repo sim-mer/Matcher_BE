@@ -171,7 +171,7 @@ public class CommentRepository {
             pstmt.setLong(1, jobPostId);
 
             rs = pstmt.executeQuery();
-            if(rs.next()) {
+            while(rs.next()) {
                 Long commentId = rs.getLong(1);
                 String content = rs.getString(2);
                 LocalDateTime date = rs.getTimestamp(3).toLocalDateTime();
