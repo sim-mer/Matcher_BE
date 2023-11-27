@@ -6,6 +6,7 @@ import com.knu.matcher.domain.user.User;
 import com.knu.matcher.dto.common.OffsetPagingResponse;
 import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.request.EditReservationPostDto;
+import com.knu.matcher.dto.request.ReserveSeatDto;
 import com.knu.matcher.dto.response.reservation.AuthorDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostPagingDto;
@@ -129,5 +130,11 @@ public class ReservationPostService {
 
     private Long contByTitle(String title) {
         return reservationPostRepository.contByTitle(title);
+    }
+
+    public void reserveSeat(long id, ReserveSeatDto dto, String email) {
+        if(!reservationPostRepository.reserveSeat(id, dto.getRowNumber(), dto.getColNumber(), email)){
+            throw new IllegalStateException("예약에 실패하였습니다.");
+        }
     }
 }
