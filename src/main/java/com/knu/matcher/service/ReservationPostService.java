@@ -123,7 +123,7 @@ public class ReservationPostService {
             return new OffsetPagingResponse<>(false, reservationPostPagingDtoList);
         }
         Long total = contByTitle(title);
-        boolean hasNext = !(total <= page * pageSize);
+        boolean hasNext = !(total <= (page + 1) * pageSize);
         return new OffsetPagingResponse<>(hasNext, reservationPostPagingDtoList);
     }
 

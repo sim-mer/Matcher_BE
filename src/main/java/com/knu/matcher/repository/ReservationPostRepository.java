@@ -212,8 +212,8 @@ public class ReservationPostRepository {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, "%" + title + "%");
-            pstmt.setInt(2, (page - 1) * pageSize + 1);
-            pstmt.setInt(3, page * pageSize);
+            pstmt.setInt(2, page * pageSize + 1);
+            pstmt.setInt(3, (page + 1) * pageSize);
 
             rs = pstmt.executeQuery();
 
