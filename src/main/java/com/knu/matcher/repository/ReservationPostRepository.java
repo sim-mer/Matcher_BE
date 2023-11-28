@@ -275,23 +275,32 @@ public class ReservationPostRepository {
             pstmt.setInt(3, colNumber);
 
             rs = pstmt.executeQuery();
+            //기존예약이 존재하면 false 리턴
             if(rs.next()) {
-                Long seatId = rs.getLong(1);
-                sql = "INSERT INTO RESERVATION VALUES (?, ?)";
-                pstmt = conn.prepareStatement(sql);
-                pstmt.setString(1, email);
-                pstmt.setLong(2, seatId);
-
-                int rowsAffected = pstmt.executeUpdate();
-                if (rowsAffected > 0) {
-                    conn.commit();
-                    return true;
-                }
-                conn.rollback();
-                return false;
-            }else{
                 return false;
             }
+            Long seatId = rs.getLong(1);
+
+            sql = "SELECT * FROM RESERVATION WHERE RSRid = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, seatId);
+            rs = pstmt.executeQuery();
+            if(!rs.next()) {
+                return false;
+            }
+
+
+            sql = "INSERT INTO RESERVATION VALUES (?, ?)";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, email);
+            pstmt.setLong(2, seatId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return true;
+            }
+            conn.rollback();
         }catch(Exception ex2) {
             ex2.printStackTrace();
         }finally {
