@@ -47,4 +47,9 @@ public class ReservationPostController {
         reservationPostService.reserveSeat(id, dto, email);
     }
 
+    @GetMapping
+    public OffsetPagingResponse<ReservationPostPagingDto> getMyReservationPosts(@RequestParam int page, @TokenUserEmail String email) {
+        return reservationPostService.getMyReservationPosts(page, 20, email);
+    }
+
 }

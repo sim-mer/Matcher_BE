@@ -138,4 +138,17 @@ public class ReservationPostService {
             throw new IllegalStateException("예약에 실패하였습니다.");
         }
     }
+
+    public OffsetPagingResponse<ReservationPostPagingDto> getMyReservationPosts(int page, int pageSize, String email) {
+        List<ReservationPostPagingDto> reservationPostPagingDtoList = reservationPostRepository.findByEmailWithPage(page, pageSize, email);
+        if(reservationPostPagingDtoList == null) {
+            throw new IllegalStateException("예약 게시글 조회에 실패하였습니다.");
+        }
+        if(reservationPostPagingDtoList.isEmpty()) {
+            return new OffsetPagingResponse<>(false, reservationPostPagingDtoList);
+        }
+        Long total = reservationPostRepository.countByEmail(email);
+        boolean hasNext = !(total <= (page + 1) * pageSize);
+        return new OffsetPagingResponse<>(hasNext, reservationPostPagingDtoList);
+    }
 }
