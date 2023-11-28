@@ -275,17 +275,19 @@ public class ReservationPostRepository {
             pstmt.setInt(3, colNumber);
 
             rs = pstmt.executeQuery();
-            //기존예약이 존재하면 false 리턴
-            if(rs.next()) {
+            //존재하지 않는 좌석이면 false 리턴
+            if(!rs.next()) {
                 return false;
             }
             Long seatId = rs.getLong(1);
 
-            sql = "SELECT * FROM RESERVATION WHERE RSRid = ?";
+            sql = "SELECT * FROM RESERVATION WHERE RSid = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setLong(1, seatId);
             rs = pstmt.executeQuery();
-            if(!rs.next()) {
+
+            //기존예약이 존재하면 false 리턴
+            if(rs.next()) {
                 return false;
             }
 
