@@ -258,4 +258,54 @@ public class ReservationPostRepository {
         }
         return null;
     }
+
+    public boolean reserveSeat(long reservationPostId, int rowNumber, int colNumber, String email) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT * FROM SEAT WHERE SRPid = ? AND Rownumber = ? AND Columnnumber  = ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, reservationPostId);
+            pstmt.setInt(2, rowNumber);
+            pstmt.setInt(3, colNumber);
+
+            rs = pstmt.executeQuery();
+            //기존예약이 존재하면 false 리턴
+            if(rs.next()) {
+                return false;
+            }
+            Long seatId = rs.getLong(1);
+
+            sql = "SELECT * FROM RESERVATION WHERE RSRid = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, seatId);
+            rs = pstmt.executeQuery();
+            if(!rs.next()) {
+                return false;
+            }
+
+
+            sql = "INSERT INTO RESERVATION VALUES (?, ?)";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, email);
+            pstmt.setLong(2, seatId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return true;
+            }
+            conn.rollback();
+        }catch(Exception ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return false;
+    }
 }
