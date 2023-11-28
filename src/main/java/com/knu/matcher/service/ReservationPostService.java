@@ -100,6 +100,7 @@ public class ReservationPostService {
         return ReservationPostDetailDto.builder()
                 .id(reservationPost.getId())
                 .title(reservationPost.getTitle())
+                .content(reservationPost.getContent())
                 .date(reservationPost.getDate())
                 .author(author)
                 .rowSize(reservationPost.getRowSize())

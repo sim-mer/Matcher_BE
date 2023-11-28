@@ -11,6 +11,7 @@ import java.util.List;
 public class ReservationPostDetailDto {
     long id;
     String title;
+    String content;
     LocalDateTime date;
     AuthorDto author;
     int rowSize;
