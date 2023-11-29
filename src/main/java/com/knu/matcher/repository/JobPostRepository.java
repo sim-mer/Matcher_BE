@@ -226,12 +226,25 @@ public class JobPostRepository {
         PreparedStatement pstmt = null;
 
         String sql = "INSERT INTO JOBPOST (JPid, JPtitle, JPcontent, JPdate, JPUemail) VALUES (?, ?, ?, ?, ?)";
+        ResultSet rs = null;
+
 
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            String _sql = "SELECT MAX(JPid) FROM JOBPOST";
+            pstmt = conn.prepareStatement(_sql);
+            rs = pstmt.executeQuery();
+
+            if(!rs.next()){
+                return null;
+            }
+            long newId = rs.getLong(1) + 1;
+
+
             pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, jobPost.getId());
+            pstmt.setLong(1, newId);
             pstmt.setString(2, jobPost.getTitle());
             pstmt.setString(3, jobPost.getContent());
             pstmt.setTimestamp(4, Timestamp.valueOf(jobPost.getDate()));
@@ -240,39 +253,39 @@ public class JobPostRepository {
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
                 conn.commit();
-                return jobPost.getId();
+                return newId;
             }
             conn.rollback();
             return null;
         }catch(SQLException ex2) {
             ex2.printStackTrace();
         }finally {
-            dataSourceUtils.close(conn, pstmt, null);
+            dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
     }
 
-    public List<JobPostSummaryWithUser> findJobPostSummaryList(int page, int pageSize) {
+    public List<JobPostSummaryWithUser> findJobPostSummaryList(int page, int pageSize, String titleKeyword) {
         Connection conn = null;
         PreparedStatement pstmt = null;
 
-        String sql = "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM ("+
-                "SELECT JPid, JPTitle, JPdate, JPUEmail" +
-                " FROM (" +
-                "SELECT SEQ, JPid, JPTitle, JPdate, JPUEmail FROM (" +
-                    "SELECT ROWNUM AS SEQ, JPid, JPTitle, JPdate, JPUEmail FROM (" +
-                        "SELECT * FROM JOBPOST ORDER BY JPdate DESC" +
-                    ")" +
-                ") WHERE SEQ >= ?" +
-                ") WHERE ROWNUM <= ? ) JOIN USERS ON USERS.Email = JPUemail ORDER BY JPdate DESC";
+        String sql = "SELECT T2.* FROM (" +
+                "SELECT T.*,(ROWNUM) ROW_NUM FROM (" +
+                "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM JOBPOST JOIN USERS ON USERS.Email = JPUemail " +
+                "WHERE JPTITLE LIKE ? ORDER BY JPdate DESC" +
+                ") T WHERE ROWNUM < ? " +
+                ") T2 WHERE ROW_NUM >= ? ";
+
+
         List<JobPostSummaryWithUser> jobPostSummaryWithUsers = new ArrayList<>();
         ResultSet rs = null;
 
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, page*pageSize);
-            pstmt.setInt(2, pageSize);
+            pstmt.setString(1, "%" + titleKeyword + "%");
+            pstmt.setInt(2, (page + 1)*pageSize);
+            pstmt.setInt(3, page*pageSize);
 
             rs = pstmt.executeQuery();
             while(rs.next()) {
@@ -296,5 +309,76 @@ public class JobPostRepository {
             dataSourceUtils.close(conn, pstmt, rs);
         }
         return jobPostSummaryWithUsers;
+    }
+
+    public List<JobPostSummaryWithUser> findJobPostSummaryList(int page, int pageSize, String titleKeyword, String email) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT T2.* FROM (" +
+                "SELECT T.*,(ROWNUM) ROW_NUM FROM (" +
+                "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM JOBPOST JOIN USERS ON USERS.Email = JPUemail " +
+                "WHERE JPTITLE LIKE ? AND JPUEmail = ? ORDER BY JPdate DESC" +
+                ") T WHERE ROWNUM < ? " +
+                ") T2 WHERE ROW_NUM >= ? ";
+
+
+        List<JobPostSummaryWithUser> jobPostSummaryWithUsers = new ArrayList<>();
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + titleKeyword + "%");
+            pstmt.setString(2, email);
+            pstmt.setInt(3, (page + 1)*pageSize);
+            pstmt.setInt(4, page*pageSize);
+
+            rs = pstmt.executeQuery();
+            while(rs.next()) {
+                Long id = rs.getLong(1);
+                String title = rs.getString(2);
+                LocalDateTime date = rs.getTimestamp(3).toLocalDateTime();
+                String userEmail = rs.getString(4);
+                String userName = rs.getString(5);
+                String userMajor = rs.getString(6);
+                String userStdNumber = rs.getString(7);
+
+                JobPostSummaryWithUser jobPostSummaryWithUser = JobPostSummaryWithUser.builder()
+                        .id(id).title(title).date(date).email(userEmail).name(userName).major(userMajor).stdNumber(userStdNumber).build();
+                jobPostSummaryWithUsers.add(jobPostSummaryWithUser);
+
+            }
+            return jobPostSummaryWithUsers;
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return jobPostSummaryWithUsers;
+    }
+
+    public Long getCountByTitle(String title) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT COUNT(*) FROM JOBPOST WHERE JPTitle LIKE ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + title + "%");
+
+            rs = pstmt.executeQuery();
+            if(rs.next()) {
+                return rs.getLong(1);
+            }
+        }catch(Exception ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return null;
     }
 }

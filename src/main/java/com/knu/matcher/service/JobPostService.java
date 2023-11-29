@@ -25,13 +25,17 @@ public class JobPostService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
 
-    public OffsetPagingResponse<JobPostSummaryDto> getJobPostSummaryList(int page, int size) {
-        List<JobPostSummaryWithUser> jobPostSummaryWithUserList = jobPostRepository.findJobPostSummaryList(page, size);
+    public OffsetPagingResponse<JobPostSummaryDto> getJobPostSummaryList(int page, int size, String title, String email) {
+        List<JobPostSummaryWithUser> jobPostSummaryWithUserList;
+        if(email == null) jobPostSummaryWithUserList = jobPostRepository.findJobPostSummaryList(page, size, title);
+        else jobPostSummaryWithUserList = jobPostRepository.findJobPostSummaryList(page, size, title, email);
 
         List<JobPostSummaryDto> jobPostSummaryDtoList = jobPostSummaryWithUserList.stream()
                 .map(JobPostSummaryDto::fromDomain).collect(Collectors.toList());
+        Long total = jobPostRepository.getCountByTitle(title);
+        boolean hasNext = !(total <= (long) (page + 1) * size);
 
-        return new OffsetPagingResponse<>(jobPostSummaryDtoList.size() == size, jobPostSummaryDtoList);
+        return new OffsetPagingResponse<>(hasNext, jobPostSummaryDtoList);
     }
 
     public JobPostDetailResponse getJobPostDetail(Long jobPostId) {
@@ -56,9 +60,8 @@ public class JobPostService {
     }
 
     public Long createJobPost(String userEmail, CreateJobPostRequest dto) {
-        Long id = jobPostRepository.findLastJobPostId() + 1;
+        //Long id = jobPostRepository.findLastJobPostId() + 1;
         JobPost jobPost = JobPost.builder()
-                .id(id)
                 .title(dto.getTitle())
                 .date(LocalDateTime.now())
                 .content(dto.getContent())
