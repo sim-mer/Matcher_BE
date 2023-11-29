@@ -27,13 +27,9 @@ public class ReservationPostService {
     private final UserRepository userRepository;
 
     public long createReservationPost(CreateReservationPostDto dto, String email) {
-        long reservationPostId = reservationPostRepository.findLastId() + 1;
-        long seatId = seatRepository.findLastId() + 1;
-
         List<CreateReservationPostDto.Seat> disableSeatList = dto.getDisableSeatList();
 
         ReservationPost reservationPost = ReservationPost.builder()
-                .id(reservationPostId)
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .date(LocalDateTime.now())

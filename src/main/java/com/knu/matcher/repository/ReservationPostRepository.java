@@ -1,6 +1,7 @@
 package com.knu.matcher.repository;
 
 import com.knu.matcher.domain.reservation.ReservationPost;
+import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostPagingDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,30 +20,19 @@ public class ReservationPostRepository {
     private final DataSource dataSource;
     private final CustomDataSourceUtils dataSourceUtils;
 
-    public Long findLastId(){
-        Connection conn = null;
+    private static Long getNextRPid (Connection conn) throws SQLException{
         PreparedStatement pstmt = null;
-
         ResultSet rs = null;
         String sql = "SELECT MAX(RPid) FROM RESERVATIONPOST";
-
-        try{
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
-
-            while(rs.next()){
-                return rs.getLong(1);
-            }
-        }catch(SQLException ex2) {
-            ex2.printStackTrace();
-        }finally {
-            dataSourceUtils.close(conn, pstmt, rs);
+        pstmt = conn.prepareStatement(sql);
+        rs = pstmt.executeQuery();
+        if (rs.next()) {
+            return rs.getLong(1) + 1;
         }
         return null;
     }
 
-    public Long save(ReservationPost reservationPost) {
+    public Long save(ReservationPost reservationPost, List<CreateReservationPostDto.Seat> disabledSeats) {
         Connection conn = null;
         PreparedStatement pstmt = null;
 
@@ -51,6 +41,11 @@ public class ReservationPostRepository {
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
+            Long nextRPid = getNextRPid(conn);
+            if(nextRPid == null) nextRPid = 1L;
+
             pstmt = conn.prepareStatement(sql);
             pstmt.setLong(1, reservationPost.getId());
             pstmt.setString(2, reservationPost.getTitle());
