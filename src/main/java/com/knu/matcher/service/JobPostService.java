@@ -32,6 +32,8 @@ public class JobPostService {
 
         List<JobPostSummaryDto> jobPostSummaryDtoList = jobPostSummaryWithUserList.stream()
                 .map(JobPostSummaryDto::fromDomain).collect(Collectors.toList());
+        Long total = jobPostRepository.getCountByTitle(title);
+        boolean hasNext = !(total <= (long) (page + 1) * size);
 
         return new OffsetPagingResponse<>(jobPostSummaryDtoList.size() == size, jobPostSummaryDtoList);
     }

@@ -357,4 +357,28 @@ public class JobPostRepository {
         }
         return jobPostSummaryWithUsers;
     }
+
+    public Long getCountByTitle(String title) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT COUNT(*) FROM JOBPOST WHERE JPTitle LIKE ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + title + "%");
+
+            rs = pstmt.executeQuery();
+            if(rs.next()) {
+                return rs.getLong(1);
+            }
+        }catch(Exception ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return null;
+    }
 }
