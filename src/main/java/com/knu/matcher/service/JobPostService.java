@@ -35,7 +35,7 @@ public class JobPostService {
         Long total = jobPostRepository.getCountByTitle(title);
         boolean hasNext = !(total <= (long) (page + 1) * size);
 
-        return new OffsetPagingResponse<>(jobPostSummaryDtoList.size() == size, jobPostSummaryDtoList);
+        return new OffsetPagingResponse<>(hasNext, jobPostSummaryDtoList);
     }
 
     public JobPostDetailResponse getJobPostDetail(Long jobPostId) {
