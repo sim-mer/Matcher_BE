@@ -310,4 +310,75 @@ public class ReservationPostRepository {
         }
         return false;
     }
+
+    public List<ReservationPostPagingDto> findByEmailWithPage(int page, int pageSize, String email) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT * " +
+                "FROM (" +
+                "    SELECT ROWNUM AS RNUM, RP.* " +
+                "    FROM (" +
+                "        SELECT RP.RPid, RP.RPtitle, RP.RPdate, U.Name" +
+                "        FROM RESERVATIONPOST RP" +
+                "        JOIN USERS U ON RP.RPUemail = U.Email" +
+                "        WHERE RP.RPUemail = ? " +
+                "        ORDER BY RPdate DESC" +
+                "    ) RP" +
+                ") " +
+                "WHERE RNUM BETWEEN ? AND ?";
+        ResultSet rs = null;
+
+        List<ReservationPostPagingDto> dtoList = new ArrayList<>();
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, email);
+            pstmt.setInt(2, page * pageSize + 1);
+            pstmt.setInt(3, (page + 1) * pageSize);
+
+            rs = pstmt.executeQuery();
+
+            while(rs.next()) {
+                ReservationPostPagingDto dto = ReservationPostPagingDto.builder()
+                        .id(rs.getLong(2))
+                        .title(rs.getString(3))
+                        .date(rs.getTimestamp(4).toLocalDateTime())
+                        .ownerName(rs.getString(5))
+                        .build();
+                dtoList.add(dto);
+            }
+            return dtoList;
+        }catch(Exception ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return null;
+    }
+
+    public Long countByEmail(String email) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT COUNT(*) FROM RESERVATIONPOST WHERE RPUemail = ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, email);
+
+            rs = pstmt.executeQuery();
+            if(rs.next()) {
+                return rs.getLong(1);
+            }
+        }catch(Exception ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return null;
+    }
 }

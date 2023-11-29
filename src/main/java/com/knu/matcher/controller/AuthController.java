@@ -1,14 +1,12 @@
 package com.knu.matcher.controller;
 
+import com.knu.matcher.dto.user.SignUpRequestDto;
 import com.knu.matcher.jwt.JwtUtil;
 import com.knu.matcher.jwt.Token;
 import com.knu.matcher.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,5 +26,12 @@ public class AuthController {
     public String reissueAccessToken(@RequestHeader("Authorization") String refreshToken){
         return jwtUtil.reissueAccessToken(refreshToken);
     }
+
+    @PostMapping("/signup")
+    public Token signup(@RequestBody SignUpRequestDto dto){
+        userService.createUser(dto);
+        return jwtUtil.createToken(dto.getEmail());
+    }
+
 
 }

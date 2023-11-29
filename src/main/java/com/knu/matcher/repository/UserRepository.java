@@ -109,4 +109,33 @@ public class UserRepository {
     }
 
 
+    public boolean save(User user) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "INSERT INTO USERS VALUES (?, ?, ?, ?, ?)";
+
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getEmail());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getName());
+            pstmt.setString(4, user.getMajor());
+            pstmt.setString(5, user.getStdNumber());
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return true;
+            }
+            conn.rollback();
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, null);
+        }
+        return false;
+    }
 }

@@ -2,6 +2,7 @@ package com.knu.matcher.service;
 
 import com.knu.matcher.domain.user.User;
 import com.knu.matcher.dto.user.EditUserInfoRequest;
+import com.knu.matcher.dto.user.SignUpRequestDto;
 import com.knu.matcher.dto.user.UserInfoDto;
 import com.knu.matcher.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +43,18 @@ public class UserService {
             throw new IllegalArgumentException("존재하지 않는 유저입니다.");
         }
         userRepository.deleteUser(userEmail);
+    }
+
+    public void createUser(SignUpRequestDto dto) {
+        User user = User.builder()
+                .email(dto.getEmail())
+                .name(dto.getName())
+                .password(dto.getPassword())
+                .major(dto.getMajor())
+                .stdNumber(dto.getStdNumber())
+                .build();
+        if(!userRepository.save(user)){
+            throw new IllegalArgumentException("회원가입에 실패하였습니다.");
+        }
     }
 }
