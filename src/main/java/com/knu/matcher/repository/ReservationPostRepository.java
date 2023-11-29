@@ -4,6 +4,7 @@ import com.knu.matcher.domain.reservation.ReservationPost;
 import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostPagingDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -16,23 +17,58 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationPostRepository {
     private final DataSource dataSource;
     private final CustomDataSourceUtils dataSourceUtils;
 
-    private static Long getNextRPid (Connection conn) throws SQLException{
+    public Long getRPid() {
+        Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        String sql = "SELECT MAX(RPid) FROM RESERVATIONPOST";
-        pstmt = conn.prepareStatement(sql);
-        rs = pstmt.executeQuery();
-        if (rs.next()) {
-            return rs.getLong(1) + 1;
+        String selectSql = "SELECT RPid FROM ID FOR UPDATE";
+        String updateSql = "UPDATE ID SET RPid = ?";
+
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
+            pstmt = conn.prepareStatement(selectSql);
+            while (true) {
+                try {
+                    rs = pstmt.executeQuery();
+                    break;
+                } catch (Exception ex) {
+                }
+            }
+
+            Long currentId = null;
+            if (rs.next()) {
+                currentId = rs.getLong(1);
+            }
+
+            Long nextId = currentId + 1;
+
+            pstmt = conn.prepareStatement(updateSql);
+            pstmt.setLong(1, nextId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return currentId;
+            }
+            conn.rollback();
+            return null;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
     }
 
-    public Long save(ReservationPost reservationPost, List<CreateReservationPostDto.Seat> disabledSeats) {
+    public Long save(ReservationPost reservationPost) {
         Connection conn = null;
         PreparedStatement pstmt = null;
 
@@ -41,12 +77,9 @@ public class ReservationPostRepository {
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-
-            Long nextRPid = getNextRPid(conn);
-            if(nextRPid == null) nextRPid = 1L;
 
             pstmt = conn.prepareStatement(sql);
+
             pstmt.setLong(1, reservationPost.getId());
             pstmt.setString(2, reservationPost.getTitle());
 

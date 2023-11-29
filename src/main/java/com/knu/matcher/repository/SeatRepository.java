@@ -1,6 +1,6 @@
 package com.knu.matcher.repository;
 
-import com.knu.matcher.domain.reservation.Seat;
+import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,50 +19,23 @@ public class SeatRepository {
     private final DataSource dataSource;
     private final CustomDataSourceUtils dataSourceUtils;
 
-    public Long findLastId(){
+    private Long getLastRPid (){
         Connection conn = null;
         PreparedStatement pstmt = null;
-
         ResultSet rs = null;
-        String sql = "SELECT MAX(Sid) FROM SEAT";
-
-        try{
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
-
-            if(rs.next()){
-                return rs.getLong(1);
-            }
-        }catch(SQLException ex2) {
-            ex2.printStackTrace();
-        }finally {
-            dataSourceUtils.close(conn, pstmt, rs);
-        }
-        return null;
-    }
-
-    public Long save(Seat seat) {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        String sql = "INSERT INTO SEAT VALUES (?, ?, ?, ?)";
+        String sql = "SELECT Sid FROM ID";
 
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, seat.getId());
-            pstmt.setInt(2, seat.getRowNumber());
-            pstmt.setInt(3, seat.getColNumber());
-            pstmt.setLong(4, seat.getReservationPostId());
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
-            int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                conn.commit();
-                return seat.getId();
+            pstmt = conn.prepareStatement(sql);
+
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getLong(1);
             }
-            conn.rollback();
             return null;
         }catch(SQLException ex2) {
             ex2.printStackTrace();
@@ -71,6 +44,56 @@ public class SeatRepository {
         }
         return null;
     }
+
+    public boolean saveSeatList(List<CreateReservationPostDto.Seat> disableSeats, int rowSize, int colSize, long reservationPostId) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "INSERT INTO SEAT VALUES (?, ?, ?, ?)";
+
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
+            pstmt = conn.prepareStatement(sql);
+
+            for (int row = 0; row < rowSize; row++) {
+                for (int col = 0; col < colSize; col++) {
+                    if (!isSeatDisabled(row, col, disableSeats)) {
+                        pstmt.setLong(1, getLastRPid());
+                        pstmt.setInt(2, row);
+                        pstmt.setInt(3, col);
+                        pstmt.setLong(4, reservationPostId);
+                        pstmt.addBatch();
+                    }
+                }
+            }
+
+            int[] rowsAffected = pstmt.executeBatch();
+
+            for (int affectedRows : rowsAffected) {
+                if (affectedRows < 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+            conn.commit();
+            return true;
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, null);
+        }
+        return false;
+    }
+
+    private boolean isSeatDisabled(int row, int col, List<CreateReservationPostDto.Seat> disableSeatList) {
+        return disableSeatList.stream()
+                .anyMatch(disableSeat -> disableSeat.getRowNumber() == row
+                        && disableSeat.getColNumber() == col);
+    }
+
 
     public List<ReservationPostDetailDto.Seat> findByRPidWithRU(long id) {
         Connection conn = null;

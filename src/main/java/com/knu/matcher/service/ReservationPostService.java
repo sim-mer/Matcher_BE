@@ -29,7 +29,10 @@ public class ReservationPostService {
     public long createReservationPost(CreateReservationPostDto dto, String email) {
         List<CreateReservationPostDto.Seat> disableSeatList = dto.getDisableSeatList();
 
+        Long id = reservationPostRepository.getRPid();
+
         ReservationPost reservationPost = ReservationPost.builder()
+                .id(id)
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .date(LocalDateTime.now())
@@ -37,27 +40,16 @@ public class ReservationPostService {
                 .rowSize(dto.getRowSize())
                 .colSize(dto.getColSize())
                 .build();
-        if(reservationPostRepository.save(reservationPost) == null) {
+
+
+        if((id = reservationPostRepository.save(reservationPost)) == null) {
             throw new IllegalStateException("예약 게시글 생성에 실패하였습니다.");
         }
 
-        for (int row = 0; row < dto.getRowSize(); row++) {
-            for (int col = 0; col < dto.getColSize(); col++) {
-                if (!isSeatDisabled(row, col, disableSeatList)) {
-                    Seat seat = Seat.builder()
-                            .id(seatId++)
-                            .rowNumber(row)
-                            .colNumber(col)
-                            .reservationPostId(reservationPostId)
-                            .build();
-                    if (seatRepository.save(seat) == null) {
-                        throw new IllegalStateException("예약 게시글 생성에 실패하였습니다.");
-                    }
-                }
-            }
-        }
-
-        return reservationPostId;
+//        if(!seatRepository.saveSeatList(disableSeatList, dto.getRowSize(), dto.getColSize(), id)) {
+//            throw new IllegalStateException("예약 좌석 생성에 실패하였습니다.");
+//        }
+        return id;
     }
 
     public void deleteReservationPost(long id) {
