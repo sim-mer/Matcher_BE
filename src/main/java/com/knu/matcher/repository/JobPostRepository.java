@@ -310,4 +310,51 @@ public class JobPostRepository {
         }
         return jobPostSummaryWithUsers;
     }
+
+    public List<JobPostSummaryWithUser> findJobPostSummaryList(int page, int pageSize, String titleKeyword, String email) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT T2.* FROM (" +
+                "SELECT T.*,(ROWNUM) ROW_NUM FROM (" +
+                "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM JOBPOST JOIN USERS ON USERS.Email = JPUemail " +
+                "WHERE JPTITLE LIKE ? AND JPUEmail = ? ORDER BY JPdate DESC" +
+                ") T WHERE ROWNUM < ? " +
+                ") T2 WHERE ROW_NUM >= ? ";
+
+
+        List<JobPostSummaryWithUser> jobPostSummaryWithUsers = new ArrayList<>();
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + titleKeyword + "%");
+            pstmt.setString(2, email);
+            pstmt.setInt(3, (page + 1)*pageSize);
+            pstmt.setInt(4, page*pageSize);
+
+            rs = pstmt.executeQuery();
+            while(rs.next()) {
+                Long id = rs.getLong(1);
+                String title = rs.getString(2);
+                LocalDateTime date = rs.getTimestamp(3).toLocalDateTime();
+                String userEmail = rs.getString(4);
+                String userName = rs.getString(5);
+                String userMajor = rs.getString(6);
+                String userStdNumber = rs.getString(7);
+
+                JobPostSummaryWithUser jobPostSummaryWithUser = JobPostSummaryWithUser.builder()
+                        .id(id).title(title).date(date).email(userEmail).name(userName).major(userMajor).stdNumber(userStdNumber).build();
+                jobPostSummaryWithUsers.add(jobPostSummaryWithUser);
+
+            }
+            return jobPostSummaryWithUsers;
+        }catch(SQLException ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return jobPostSummaryWithUsers;
+    }
 }
