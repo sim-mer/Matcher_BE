@@ -56,9 +56,8 @@ public class JobPostService {
     }
 
     public Long createJobPost(String userEmail, CreateJobPostRequest dto) {
-        Long id = jobPostRepository.findLastJobPostId() + 1;
+        //Long id = jobPostRepository.findLastJobPostId() + 1;
         JobPost jobPost = JobPost.builder()
-                .id(id)
                 .title(dto.getTitle())
                 .date(LocalDateTime.now())
                 .content(dto.getContent())

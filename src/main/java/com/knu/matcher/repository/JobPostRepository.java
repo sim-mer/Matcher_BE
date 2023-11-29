@@ -226,12 +226,25 @@ public class JobPostRepository {
         PreparedStatement pstmt = null;
 
         String sql = "INSERT INTO JOBPOST (JPid, JPtitle, JPcontent, JPdate, JPUemail) VALUES (?, ?, ?, ?, ?)";
+        ResultSet rs = null;
+
 
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            String _sql = "SELECT MAX(JPid) FROM JOBPOST";
+            pstmt = conn.prepareStatement(_sql);
+            rs = pstmt.executeQuery();
+
+            if(!rs.next()){
+                return null;
+            }
+            long newId = rs.getLong(1) + 1;
+
+
             pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, jobPost.getId());
+            pstmt.setLong(1, newId);
             pstmt.setString(2, jobPost.getTitle());
             pstmt.setString(3, jobPost.getContent());
             pstmt.setTimestamp(4, Timestamp.valueOf(jobPost.getDate()));
@@ -240,14 +253,14 @@ public class JobPostRepository {
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
                 conn.commit();
-                return jobPost.getId();
+                return newId;
             }
             conn.rollback();
             return null;
         }catch(SQLException ex2) {
             ex2.printStackTrace();
         }finally {
-            dataSourceUtils.close(conn, pstmt, null);
+            dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
     }
