@@ -269,23 +269,21 @@ public class JobPostRepository {
         Connection conn = null;
         PreparedStatement pstmt = null;
 
-        String sql = "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM ("+
-                "SELECT JPid, JPTitle, JPdate, JPUEmail" +
-                " FROM (" +
-                "SELECT SEQ, JPid, JPTitle, JPdate, JPUEmail FROM (" +
-                    "SELECT ROWNUM AS SEQ, JPid, JPTitle, JPdate, JPUEmail FROM (" +
-                        "SELECT * FROM JOBPOST ORDER BY JPdate DESC" +
-                    ")" +
-                ") WHERE SEQ >= ?" +
-                ") WHERE ROWNUM <= ? ) JOIN USERS ON USERS.Email = JPUemail ORDER BY JPdate DESC";
+        String sql = "SELECT T2.* FROM (" +
+                "SELECT T.*,(ROWNUM) ROW_NUM FROM (" +
+                "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM JOBPOST JOIN USERS ON USERS.Email = JPUemail ORDER BY JPdate DESC" +
+                ") T WHERE ROWNUM < ? " +
+                ") T2 WHERE ROW_NUM >= ? ";
+
+
         List<JobPostSummaryWithUser> jobPostSummaryWithUsers = new ArrayList<>();
         ResultSet rs = null;
 
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, page*pageSize);
-            pstmt.setInt(2, pageSize);
+            pstmt.setInt(1, (page + 1)*pageSize);
+            pstmt.setInt(2, page*pageSize);
 
             rs = pstmt.executeQuery();
             while(rs.next()) {
