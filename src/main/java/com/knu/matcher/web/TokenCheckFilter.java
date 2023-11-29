@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @Slf4j
 public class TokenCheckFilter implements Filter {
-    private static final String[] whiteList = {"/login", "/reissue"};
+    private static final String[] whiteList = {"/login", "/reissue", "/signup"};
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
