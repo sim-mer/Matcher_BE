@@ -25,8 +25,8 @@ public class JobPostService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
 
-    public OffsetPagingResponse<JobPostSummaryDto> getJobPostSummaryList(int page, int size) {
-        List<JobPostSummaryWithUser> jobPostSummaryWithUserList = jobPostRepository.findJobPostSummaryList(page, size);
+    public OffsetPagingResponse<JobPostSummaryDto> getJobPostSummaryList(int page, int size, String title) {
+        List<JobPostSummaryWithUser> jobPostSummaryWithUserList = jobPostRepository.findJobPostSummaryList(page, size, title);
 
         List<JobPostSummaryDto> jobPostSummaryDtoList = jobPostSummaryWithUserList.stream()
                 .map(JobPostSummaryDto::fromDomain).collect(Collectors.toList());

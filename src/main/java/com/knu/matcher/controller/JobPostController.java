@@ -14,8 +14,9 @@ public class JobPostController {
     private final JobPostService jobPostService;
 
     @GetMapping
-    public OffsetPagingResponse<JobPostSummaryDto> getJobPostSummaryList(@RequestParam("page") int page) {
-        return jobPostService.getJobPostSummaryList(page,20);
+    public OffsetPagingResponse<JobPostSummaryDto> getJobPostSummaryList(@RequestParam("page") int page, @RequestParam(value = "title", required = false) String title) {
+        if(title == null) title = "";
+        return jobPostService.getJobPostSummaryList(page,20, title);
     }
 
     @GetMapping("/{jid}")

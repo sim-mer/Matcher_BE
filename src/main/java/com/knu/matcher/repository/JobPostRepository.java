@@ -265,13 +265,14 @@ public class JobPostRepository {
         return null;
     }
 
-    public List<JobPostSummaryWithUser> findJobPostSummaryList(int page, int pageSize) {
+    public List<JobPostSummaryWithUser> findJobPostSummaryList(int page, int pageSize, String titleKeyword) {
         Connection conn = null;
         PreparedStatement pstmt = null;
 
         String sql = "SELECT T2.* FROM (" +
                 "SELECT T.*,(ROWNUM) ROW_NUM FROM (" +
-                "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM JOBPOST JOIN USERS ON USERS.Email = JPUemail ORDER BY JPdate DESC" +
+                "SELECT JPid, JPTitle, JPdate, JPUEmail, Name, Major, Std_number FROM JOBPOST JOIN USERS ON USERS.Email = JPUemail " +
+                "WHERE JPTITLE LIKE ? ORDER BY JPdate DESC" +
                 ") T WHERE ROWNUM < ? " +
                 ") T2 WHERE ROW_NUM >= ? ";
 
@@ -282,8 +283,9 @@ public class JobPostRepository {
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, (page + 1)*pageSize);
-            pstmt.setInt(2, page*pageSize);
+            pstmt.setString(1, "%" + titleKeyword + "%");
+            pstmt.setInt(2, (page + 1)*pageSize);
+            pstmt.setInt(3, page*pageSize);
 
             rs = pstmt.executeQuery();
             while(rs.next()) {
