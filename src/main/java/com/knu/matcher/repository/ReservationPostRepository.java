@@ -339,55 +339,6 @@ public class ReservationPostRepository {
         }
         return false;
     }
-    public boolean reserveSeatList(long reservationPostId, List<ReserveSeatDto> seats, String email) {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        String sql = "SELECT * FROM SEAT WHERE SRPid = ?";
-        ResultSet rs = null;
-
-        try {
-            conn = dataSource.getConnection();
-            conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, reservationPostId);
-
-            rs = pstmt.executeQuery();
-            List<Long> seatIdList = new ArrayList<>();
-            while (rs.next()){
-                Long seatId = rs.getLong(1);
-                seatIdList.add(seatId);
-            }
-
-            sql = "INSERT INTO RESERVATION VALUES (?, ?)";
-            pstmt = conn.prepareStatement(sql);
-            for(Long rsId: seatIdList){
-                pstmt.setString(1, email);
-                pstmt.setLong(2, rsId);
-                pstmt.addBatch();
-            }
-
-
-
-            int[] rowsAffected = pstmt.executeBatch();
-            if (rowsAffected.length == seatIdList.size()) {
-                conn.commit();
-                return true;
-            }
-            conn.rollback();
-        } catch (Exception ex2) {
-            ex2.printStackTrace();
-            try {
-                conn.rollback();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        } finally {
-            dataSourceUtils.close(conn, pstmt, rs);
-        }
-        return false;
-    }
 
     public List<ReservationPostPagingDto> findByEmailWithPage(int page, int pageSize, String email) {
         Connection conn = null;

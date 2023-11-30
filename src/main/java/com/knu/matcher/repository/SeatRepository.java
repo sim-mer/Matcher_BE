@@ -1,6 +1,7 @@
 package com.knu.matcher.repository;
 
 import com.knu.matcher.dto.request.CreateReservationPostDto;
+import com.knu.matcher.dto.request.ReserveSeatDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -93,7 +94,7 @@ public class SeatRepository {
             int[] rowsAffected = pstmt.executeBatch();
 
             for (int affectedRows : rowsAffected) {
-                if (affectedRows < 0) {
+                if (affectedRows <= 0) {
                     conn.rollback();
                     return false;
                 }
@@ -150,5 +151,64 @@ public class SeatRepository {
             dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
+    }
+
+    public boolean reserveSeatList(long reservationPostId, List<ReserveSeatDto> seats, String email) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT * FROM SEAT WHERE SRPid = ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, reservationPostId);
+
+            rs = pstmt.executeQuery();
+            List<Long> seatIdList = new ArrayList<>();
+            while (rs.next()){
+                Long seatId = rs.getLong(1);
+                int rowNumber = rs.getInt(2);
+                int colNumber = rs.getInt(3);
+                for(ReserveSeatDto seat: seats){
+                    if(seat.getRowNumber() == rowNumber && seat.getColNumber() == colNumber){
+                        seatIdList.add(seatId);
+                    }
+                }
+            }
+
+            sql = "INSERT INTO RESERVATION VALUES (?, ?)";
+            pstmt = conn.prepareStatement(sql);
+            for(Long rsId: seatIdList){
+                pstmt.setString(1, email);
+                pstmt.setLong(2, rsId);
+                pstmt.addBatch();
+            }
+
+
+
+            int[] rowsAffected = pstmt.executeBatch();
+            for (int affectedRows : rowsAffected) {
+                if (affectedRows <= 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+            conn.commit();
+            return true;
+        } catch (Exception ex2) {
+            ex2.printStackTrace();
+            try {
+                conn.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return false;
     }
 }
