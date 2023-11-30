@@ -106,7 +106,7 @@ public class JobPostService {
     }
 
     public Long createComment(String userEmail, Long jobPostId, CreateCommentRequest dto) {
-        Long id = commentRepository.findLastCommentId() + 1;
+        Long id = commentRepository.getNewCommentId();
         Comment comment = Comment.builder()
                 .id(id)
                 .content(dto.getContent())

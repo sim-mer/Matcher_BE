@@ -22,7 +22,7 @@ public class MessageService {
 
 
     public Long createMessage(String userEmail, CreateMessageRequest dto) {
-        Long id = messageRepository.findLastMessageId() + 1;
+        Long id = messageRepository.getNewMessageId();
         Message message = Message.builder()
                 .id(id)
                 .content(dto.getContent())
