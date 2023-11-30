@@ -47,9 +47,21 @@ public class ReservationPostService {
             throw new IllegalStateException("예약 게시글 생성에 실패하였습니다.");
         }
 
-//        if(!seatRepository.saveSeatList(disableSeatList, dto.getRowSize(), dto.getColSize(), id)) {
-//            throw new IllegalStateException("예약 좌석 생성에 실패하였습니다.");
-//        }
+        for (int row = 0; row < dto.getRowSize(); row++) {
+            for (int col = 0; col < dto.getColSize(); col++) {
+                if (!isSeatDisabled(row, col, disableSeatList)) {
+                    Seat seat = Seat.builder()
+                            .id(seatRepository.getNewSeatId())
+                            .rowNumber(row)
+                            .colNumber(col)
+                            .reservationPostId(id)
+                            .build();
+                    if (seatRepository.save(seat) == null) {
+                        throw new IllegalStateException("예약 좌석 생성에 실패하였습니다.");
+                    }
+                }
+            }
+        }
         return id;
     }
 

@@ -1,6 +1,6 @@
 package com.knu.matcher.repository;
 
-import com.knu.matcher.dto.request.CreateReservationPostDto;
+import com.knu.matcher.domain.reservation.Seat;
 import com.knu.matcher.dto.request.ReserveSeatDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
 import lombok.RequiredArgsConstructor;
@@ -66,53 +66,30 @@ public class SeatRepository {
         return null;
     }
 
-    public boolean saveSeatList(List<CreateReservationPostDto.Seat> disableSeats, int rowSize, int colSize, long reservationPostId) {
+    public Long save(Seat seat) {
         Connection conn = null;
         PreparedStatement pstmt = null;
 
         String sql = "INSERT INTO SEAT VALUES (?, ?, ?, ?)";
 
-        try {
+        try{
             conn = dataSource.getConnection();
-            conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-
             pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, seat.getId());
+            pstmt.setInt(2, seat.getRowNumber());
+            pstmt.setInt(3, seat.getColNumber());
+            pstmt.setLong(4, seat.getReservationPostId());
 
-            for (int row = 0; row < rowSize; row++) {
-                for (int col = 0; col < colSize; col++) {
-                    if (!isSeatDisabled(row, col, disableSeats)) {
-                        pstmt.setLong(1, getNewSeatId());
-                        pstmt.setInt(2, row);
-                        pstmt.setInt(3, col);
-                        pstmt.setLong(4, reservationPostId);
-                        pstmt.addBatch();
-                    }
-                }
+            int rowsAffected = pstmt.executeUpdate();
+            if(rowsAffected > 0){
+                return seat.getId();
             }
-
-            int[] rowsAffected = pstmt.executeBatch();
-
-            for (int affectedRows : rowsAffected) {
-                if (affectedRows <= 0) {
-                    conn.rollback();
-                    return false;
-                }
-            }
-            conn.commit();
-            return true;
         }catch(SQLException ex2) {
             ex2.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, null);
         }
-        return false;
-    }
-
-    private boolean isSeatDisabled(int row, int col, List<CreateReservationPostDto.Seat> disableSeatList) {
-        return disableSeatList.stream()
-                .anyMatch(disableSeat -> disableSeat.getRowNumber() == row
-                        && disableSeat.getColNumber() == col);
+        return null;
     }
 
 
@@ -187,8 +164,6 @@ public class SeatRepository {
                 pstmt.setLong(2, rsId);
                 pstmt.addBatch();
             }
-
-
 
             int[] rowsAffected = pstmt.executeBatch();
             for (int affectedRows : rowsAffected) {
