@@ -42,7 +42,7 @@ public class ImageController {
     }
 
     @PostMapping("/{jobPostId}")
-    public List<Long> ContractDocumentUpload(@RequestParam("files") MultipartFile[] files, @PathVariable Long jobPostId) {
+    public List<Long> uploadImage(@RequestParam("files") MultipartFile[] files, @PathVariable Long jobPostId) {
         return imageService.uploadImages(files, jobPostId);
     }
 
