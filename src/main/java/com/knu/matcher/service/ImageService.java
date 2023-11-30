@@ -25,7 +25,7 @@ public class ImageService {
 
     public List<Long> uploadImages(MultipartFile[] files, Long jobPostId) {
         List<Long> imgIds = new ArrayList<>();
-        long id = jobPostImgRepository.findLastJobPostImgId() + 1;
+        long id = jobPostImgRepository.getNewJobPostImgId();
         for (MultipartFile file : files) {
             UUID uuid = UUID.randomUUID();
             Path upload = Paths.get(imageFolder);

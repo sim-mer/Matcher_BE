@@ -13,24 +13,47 @@ public class JobPostImgRepository {
     private final DataSource dataSource;
     private final CustomDataSourceUtils dataSourceUtils;
 
-    public Long findLastJobPostImgId(){
+    public Long getNewJobPostImgId() {
         Connection conn = null;
         PreparedStatement pstmt = null;
-
         ResultSet rs = null;
-        String sql = "SELECT MAX(JPIid) FROM JOBPOSTIMG";
+        String selectSql = "SELECT JPIid FROM ID FOR UPDATE";
+        String updateSql = "UPDATE ID SET JPIid = ?";
 
-        try{
+        try {
             conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
+            conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
-            while(rs.next()){
-                return rs.getLong(1);
+            pstmt = conn.prepareStatement(selectSql);
+            while (true) {
+                try {
+                    rs = pstmt.executeQuery();
+                    break;
+                } catch (Exception ex) {
+                }
             }
-        }catch(SQLException ex2) {
-            ex2.printStackTrace();
-        }finally {
+
+            Long currentId = null;
+            if (rs.next()) {
+                currentId = rs.getLong(1);
+            }
+
+            Long nextId = currentId + 1;
+
+            pstmt = conn.prepareStatement(updateSql);
+            pstmt.setLong(1, nextId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return currentId;
+            }
+            conn.rollback();
+            return null;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
             dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
