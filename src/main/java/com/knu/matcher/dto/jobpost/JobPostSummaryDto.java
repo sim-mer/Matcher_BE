@@ -2,14 +2,13 @@ package com.knu.matcher.dto.jobpost;
 
 import com.knu.matcher.domain.jobpost.JobPostSummaryWithUser;
 import com.knu.matcher.dto.user.UserInfoDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
+@Setter
 @ToString
 @AllArgsConstructor
 @Builder
@@ -17,6 +16,7 @@ public class JobPostSummaryDto {
     private Long id;
     private String title;
     private LocalDateTime date;
+    private List<String> image;
     private UserInfoDto author;
 
     public static JobPostSummaryDto fromDomain(JobPostSummaryWithUser jobPostSummaryWithUser) {

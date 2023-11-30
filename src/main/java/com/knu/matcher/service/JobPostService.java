@@ -9,6 +9,7 @@ import com.knu.matcher.dto.common.OffsetPagingResponse;
 import com.knu.matcher.dto.jobpost.*;
 import com.knu.matcher.dto.user.UserInfoDto;
 import com.knu.matcher.repository.CommentRepository;
+import com.knu.matcher.repository.JobPostImgRepository;
 import com.knu.matcher.repository.JobPostRepository;
 import com.knu.matcher.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JobPostService {
     private final JobPostRepository jobPostRepository;
+    private final JobPostImgRepository jobPostImgRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
 
@@ -32,6 +34,13 @@ public class JobPostService {
 
         List<JobPostSummaryDto> jobPostSummaryDtoList = jobPostSummaryWithUserList.stream()
                 .map(JobPostSummaryDto::fromDomain).collect(Collectors.toList());
+
+        for(JobPostSummaryDto jobPostSummaryDto : jobPostSummaryDtoList){
+            List<Long> imageIds = jobPostImgRepository.findByJobPostId(jobPostSummaryDto.getId());
+            List<String> imageList = imageIds.stream().map(this::makeImageURL).collect(Collectors.toList());
+            jobPostSummaryDto.setImage(imageList);
+        }
+
         Long total = jobPostRepository.getCountByTitle(title);
         boolean hasNext = !(total <= (long) (page + 1) * size);
 
@@ -48,7 +57,6 @@ public class JobPostService {
         List<CommentWithUser> commentWithUserList = commentRepository.findCommentByJobPostIdWithUser(jobPostId);
         List<CommentDto> commentDtoList = commentWithUserList.stream().map(CommentDto::fromDomain).collect(Collectors.toList());
 
-
         return JobPostDetailResponse.builder()
                 .id(jobPost.getId())
                 .title(jobPost.getTitle())
@@ -57,6 +65,10 @@ public class JobPostService {
                 .content(jobPost.getContent())
                 .commentList(commentDtoList)
                 .build();
+    }
+
+    private String makeImageURL(Long id) {
+        return "/image/" + id;
     }
 
     public Long createJobPost(String userEmail, CreateJobPostRequest dto) {

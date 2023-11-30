@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -140,5 +142,33 @@ public class JobPostImgRepository {
             dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
+    }
+
+    public List<Long> findByJobPostId(Long jobPostId) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT JPIid FROM JOBPOSTIMG WHERE JPIJPId = ?";
+        ResultSet rs = null;
+
+        List<Long> imageIds = new ArrayList<>();
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, jobPostId);
+
+            rs = pstmt.executeQuery();
+            while(rs.next()) {
+                Long id = rs.getLong(1);
+                imageIds.add(id);
+            }
+            return imageIds;
+        }catch(Exception ex2) {
+            ex2.printStackTrace();
+        }finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return imageIds;
     }
 }
