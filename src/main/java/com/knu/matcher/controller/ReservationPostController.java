@@ -5,6 +5,7 @@ import com.knu.matcher.dto.common.OffsetPagingResponse;
 import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.request.EditReservationPostDto;
 import com.knu.matcher.dto.request.ReserveSeatDto;
+import com.knu.matcher.dto.request.ReserveSeatsRequest;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostPagingDto;
 import com.knu.matcher.service.ReservationPostService;
@@ -45,6 +46,11 @@ public class ReservationPostController {
     @PostMapping("/{id}/seat")
     public void reserveSeat(@PathVariable long id, @RequestBody ReserveSeatDto dto, @TokenUserEmail String email) {
         reservationPostService.reserveSeat(id, dto, email);
+    }
+
+    @PostMapping("/{id}/seats")
+    public void reserveSeats(@PathVariable long id, @RequestBody ReserveSeatsRequest dto, @TokenUserEmail String email) {
+        reservationPostService.reserveSeats(id, dto, email);
     }
 
 }

@@ -7,6 +7,7 @@ import com.knu.matcher.dto.common.OffsetPagingResponse;
 import com.knu.matcher.dto.request.CreateReservationPostDto;
 import com.knu.matcher.dto.request.EditReservationPostDto;
 import com.knu.matcher.dto.request.ReserveSeatDto;
+import com.knu.matcher.dto.request.ReserveSeatsRequest;
 import com.knu.matcher.dto.response.reservation.AuthorDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostDetailDto;
 import com.knu.matcher.dto.response.reservation.ReservationPostPagingDto;
@@ -138,5 +139,11 @@ public class ReservationPostService {
         Long total = reservationPostRepository.countByEmail(email);
         boolean hasNext = !(total <= (page + 1) * pageSize);
         return new OffsetPagingResponse<>(hasNext, reservationPostPagingDtoList);
+    }
+
+    public void reserveSeats(long id, ReserveSeatsRequest dto, String email) {
+        if(!seatRepository.reserveSeatList(id, dto.getSeatList(), email)){
+            throw new IllegalStateException("예약에 실패하였습니다.");
+        }
     }
 }
