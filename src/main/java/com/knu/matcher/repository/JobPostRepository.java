@@ -15,24 +15,52 @@ import java.util.List;
 public class JobPostRepository {
     private final DataSource dataSource;
     private final CustomDataSourceUtils dataSourceUtils;
-    public Long findLastJobPostId(){
+    public Long getNewJobPostId() {
         Connection conn = null;
         PreparedStatement pstmt = null;
-
         ResultSet rs = null;
-        String sql = "SELECT MAX(JPid) FROM JOBPOST";
+        String selectSql = "SELECT JPid FROM ID FOR UPDATE";
+        String updateSql = "UPDATE ID SET JPid = ?";
 
-        try{
+        try {
             conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
+            conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
-            while(rs.next()){
-                return rs.getLong(1);
+            pstmt = conn.prepareStatement(selectSql);
+            while (true) {
+                try {
+                    rs = pstmt.executeQuery();
+                    break;
+                } catch (Exception ex) {
+                }
             }
-        }catch(SQLException ex2) {
-            ex2.printStackTrace();
-        }finally {
+
+            Long currentId = null;
+            if (rs.next()) {
+                currentId = rs.getLong(1);
+            }
+
+            Long nextId = currentId + 1;
+
+            pstmt = conn.prepareStatement(updateSql);
+            pstmt.setLong(1, nextId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return currentId;
+            }
+            conn.rollback();
+            return null;
+        } catch (SQLException ex) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex2) {
+                ex2.printStackTrace();
+            }
+            ex.printStackTrace();
+        } finally {
             dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
@@ -188,6 +216,11 @@ public class JobPostRepository {
             }
             conn.rollback();
         }catch(SQLException ex2) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             ex2.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, null);
@@ -214,6 +247,11 @@ public class JobPostRepository {
             conn.rollback();
             return false;
         }catch(SQLException ex2) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             ex2.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, null);
@@ -232,19 +270,10 @@ public class JobPostRepository {
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            String _sql = "SELECT MAX(JPid) FROM JOBPOST";
-            pstmt = conn.prepareStatement(_sql);
-            rs = pstmt.executeQuery();
-
-            if(!rs.next()){
-                return null;
-            }
-            long newId = rs.getLong(1) + 1;
 
 
             pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, newId);
+            pstmt.setLong(1, jobPost.getId());
             pstmt.setString(2, jobPost.getTitle());
             pstmt.setString(3, jobPost.getContent());
             pstmt.setTimestamp(4, Timestamp.valueOf(jobPost.getDate()));
@@ -253,11 +282,16 @@ public class JobPostRepository {
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
                 conn.commit();
-                return newId;
+                return jobPost.getId();
             }
             conn.rollback();
             return null;
         }catch(SQLException ex2) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             ex2.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, rs);
