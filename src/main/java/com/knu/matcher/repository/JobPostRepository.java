@@ -57,11 +57,6 @@ public class JobPostRepository {
             conn.rollback();
             return null;
         } catch (SQLException ex) {
-            try {
-                conn.rollback();
-            } catch (SQLException ex2) {
-                ex2.printStackTrace();
-            }
             ex.printStackTrace();
         } finally {
             dataSourceUtils.close(conn, pstmt, rs);
@@ -225,11 +220,6 @@ public class JobPostRepository {
             }
             conn.rollback();
         }catch(SQLException ex2) {
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
             ex2.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, null);
@@ -298,11 +288,6 @@ public class JobPostRepository {
             conn.rollback();
             return null;
         }catch(SQLException ex2) {
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
             ex2.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, rs);

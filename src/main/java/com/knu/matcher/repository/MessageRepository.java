@@ -55,11 +55,6 @@ public class MessageRepository {
             conn.rollback();
             return null;
         } catch (SQLException ex) {
-            try {
-                conn.rollback();
-            } catch (SQLException ex2) {
-                ex2.printStackTrace();
-            }
             ex.printStackTrace();
         } finally {
             dataSourceUtils.close(conn, pstmt, rs);
