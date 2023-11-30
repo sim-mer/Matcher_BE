@@ -19,28 +19,48 @@ public class SeatRepository {
     private final DataSource dataSource;
     private final CustomDataSourceUtils dataSourceUtils;
 
-    private Long getLastRPid (){
+    public Long getNewSeatId() {
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        String sql = "SELECT Sid FROM ID";
+        String selectSql = "SELECT Sid FROM ID FOR UPDATE";
+        String updateSql = "UPDATE ID SET Sid = ?";
 
         try {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
             conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
-            pstmt = conn.prepareStatement(sql);
-
-            rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getLong(1);
+            pstmt = conn.prepareStatement(selectSql);
+            while (true) {
+                try {
+                    rs = pstmt.executeQuery();
+                    break;
+                } catch (Exception ex) {
+                }
             }
+
+            Long currentId = null;
+            if (rs.next()) {
+                currentId = rs.getLong(1);
+            }
+
+            Long nextId = currentId + 1;
+
+            pstmt = conn.prepareStatement(updateSql);
+            pstmt.setLong(1, nextId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit();
+                return currentId;
+            }
+            conn.rollback();
             return null;
-        }catch(SQLException ex2) {
-            ex2.printStackTrace();
-        }finally {
-            dataSourceUtils.close(conn, pstmt, null);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
     }
@@ -61,7 +81,7 @@ public class SeatRepository {
             for (int row = 0; row < rowSize; row++) {
                 for (int col = 0; col < colSize; col++) {
                     if (!isSeatDisabled(row, col, disableSeats)) {
-                        pstmt.setLong(1, getLastRPid());
+                        pstmt.setLong(1, getNewSeatId());
                         pstmt.setInt(2, row);
                         pstmt.setInt(3, col);
                         pstmt.setLong(4, reservationPostId);
