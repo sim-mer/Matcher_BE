@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -178,16 +181,19 @@ public class JobPostRepository {
 
             rs = pstmt.executeQuery();
             if(rs.next()) {
+
+                Clob clob = rs.getClob(3);
+                String content = clobToString(clob);
+
                 Long id = rs.getLong(1);
                 String title = rs.getString(2);
-                String content = rs.getString(3);
                 LocalDateTime date = rs.getTimestamp(4).toLocalDateTime();
                 String userEmail = rs.getString(5);
                 JobPost jobPost = JobPost.builder().id(id).title(title).content(content).date(date).userEmail(userEmail).build();
                 return jobPost;
             }
-        }catch(SQLException ex2) {
-            ex2.printStackTrace();
+        }catch(Exception ex) {
+            ex.printStackTrace();
         }finally {
             dataSourceUtils.close(conn, pstmt, rs);
         }
@@ -414,5 +420,16 @@ public class JobPostRepository {
             dataSourceUtils.close(conn, pstmt, rs);
         }
         return null;
+    }
+    private String clobToString(Clob clob) throws SQLException, IOException {
+        StringBuilder sb = new StringBuilder();
+        try (Reader reader = clob.getCharacterStream();
+             BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        return sb.toString();
     }
 }
