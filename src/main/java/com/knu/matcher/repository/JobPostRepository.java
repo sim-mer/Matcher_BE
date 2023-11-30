@@ -210,8 +210,11 @@ public class JobPostRepository {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
             pstmt = conn.prepareStatement(sql);
+            Clob contentClob = conn.createClob();
+            contentClob.setString(1, jobPost.getContent());
+
             pstmt.setString(1, jobPost.getTitle());
-            pstmt.setString(2, jobPost.getContent());
+            pstmt.setClob(2, contentClob);
             pstmt.setTimestamp(3, Timestamp.valueOf(jobPost.getDate()));
             pstmt.setLong(4, jobPost.getId());
 
@@ -277,11 +280,13 @@ public class JobPostRepository {
             conn = dataSource.getConnection();
             conn.setAutoCommit(false);
 
+            Clob contentClob = conn.createClob();
+            contentClob.setString(1, jobPost.getContent());
 
             pstmt = conn.prepareStatement(sql);
             pstmt.setLong(1, jobPost.getId());
             pstmt.setString(2, jobPost.getTitle());
-            pstmt.setString(3, jobPost.getContent());
+            pstmt.setClob(3, contentClob);
             pstmt.setTimestamp(4, Timestamp.valueOf(jobPost.getDate()));
             pstmt.setString(5, jobPost.getUserEmail());
 
