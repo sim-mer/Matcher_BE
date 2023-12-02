@@ -35,7 +35,10 @@ public class CommentRepository {
                 try {
                     rs = pstmt.executeQuery();
                     break;
-                } catch (Exception ex) {
+                } catch (SQLException ex) {
+                    if (ex.getErrorCode() == 8177) continue;
+                    ex.printStackTrace();
+                    break;
                 }
             }
 
