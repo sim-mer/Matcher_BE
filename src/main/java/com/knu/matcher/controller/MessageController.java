@@ -25,8 +25,6 @@ public class MessageController {
 
     @GetMapping
     public List<MessageSummaryDto> getMessagesSummary(@TokenUserEmail String userEmail) {
-        System.out.println(userEmail);
-
         return messageService.getMessagesSummary(userEmail);
     }
 

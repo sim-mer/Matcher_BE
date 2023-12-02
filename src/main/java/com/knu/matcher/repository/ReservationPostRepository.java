@@ -23,7 +23,7 @@ public class ReservationPostRepository {
     private final DataSource dataSource;
     private final CustomDataSourceUtils dataSourceUtils;
 
-    public Long getRPid() {
+    public Long getNewReservationPostId() {
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
