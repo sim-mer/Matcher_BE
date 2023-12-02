@@ -30,7 +30,7 @@ public class ReservationPostService {
     public long createReservationPost(CreateReservationPostDto dto, String email) {
         List<CreateReservationPostDto.Seat> disableSeatList = dto.getDisableSeatList();
 
-        Long id = reservationPostRepository.getRPid();
+        Long id = reservationPostRepository.getNewReservationPostId();
 
         ReservationPost reservationPost = ReservationPost.builder()
                 .id(id)
