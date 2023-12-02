@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
-    url: jdbc:oracle:thin:@dbclass.cte3nd3qikhy.ap-northeast-2.rds.amazonaws.com:1521:orcl
-    username: Midterm
-    password: midterm
+    url: jdbc:oracle:thin:@localhost:1521:orcl
+    username: matcher
+    password: comp322
 
   servlet:
     multipart:

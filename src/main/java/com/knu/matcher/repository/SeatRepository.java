@@ -186,4 +186,61 @@ public class SeatRepository {
         }
         return false;
     }
+
+    public boolean deleteSeatList(long reservationPostId, List<ReserveSeatDto> seats, String email) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "SELECT * FROM SEAT WHERE SRPid = ?";
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            conn.setAutoCommit(false);
+            conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, reservationPostId);
+
+            rs = pstmt.executeQuery();
+            List<Long> seatIdList = new ArrayList<>();
+            while (rs.next()){
+                Long seatId = rs.getLong(1);
+                int rowNumber = rs.getInt(2);
+                int colNumber = rs.getInt(3);
+                for(ReserveSeatDto seat: seats){
+                    if(seat.getRowNumber() == rowNumber && seat.getColNumber() == colNumber){
+                        seatIdList.add(seatId);
+                    }
+                }
+            }
+
+            sql = "DELETE FROM RESERVATION WHERE RUemail = ? AND RSid = ?";
+            pstmt = conn.prepareStatement(sql);
+            for(Long rsId: seatIdList){
+                pstmt.setString(1, email);
+                pstmt.setLong(2, rsId);
+                pstmt.addBatch();
+            }
+
+            int[] rowsAffected = pstmt.executeBatch();
+            for (int affectedRows : rowsAffected) {
+                if (affectedRows <= 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+            conn.commit();
+            return true;
+        } catch (Exception ex2) {
+            ex2.printStackTrace();
+            try {
+                conn.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } finally {
+            dataSourceUtils.close(conn, pstmt, rs);
+        }
+        return false;
+    }
 }
