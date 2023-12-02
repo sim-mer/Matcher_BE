@@ -53,4 +53,8 @@ public class ReservationPostController {
         reservationPostService.reserveSeats(id, dto, email);
     }
 
+    @DeleteMapping("/{id}/seats")
+    public void deleteReserveSeats(@PathVariable long id, @RequestBody ReserveSeatsRequest dto, @TokenUserEmail String email) {
+        reservationPostService.deleteReserveSeats(id, dto, email);
+    }
 }

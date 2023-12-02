@@ -158,4 +158,10 @@ public class ReservationPostService {
             throw new IllegalStateException("예약에 실패하였습니다.");
         }
     }
+
+    public void deleteReserveSeats(long id, ReserveSeatsRequest dto, String email) {
+        if(!seatRepository.deleteSeatList(id, dto.getSeatList(), email)){
+            throw new IllegalStateException("예약 취소에 실패하였습니다.");
+        }
+    }
 }
